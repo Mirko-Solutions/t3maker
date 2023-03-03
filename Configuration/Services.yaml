@@ -1,0 +1,7 @@
+services:
+
+  Mirko\T3maker\Command\MakeEntityCommand:
+    tags:
+      - name: 'console.command'
+        command: 'make:model'
+        description: 'Creates a new Model entity class'

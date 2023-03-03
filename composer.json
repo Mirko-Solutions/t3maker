@@ -1,0 +1,43 @@
+{
+  "name": "mirko/t3maker",
+  "type": "typo3-cms-extension",
+  "description": "TYPO3 Maker helps you create empty commands, controllers, models and more so you can forget about writing boilerplate code.",
+  "homepage": "https://github.com/Mirko-Solutions/t3maker",
+  "license": "GPL-2.0+",
+  "version": "0.0.1",
+  "keywords": [
+    "TYPO3 CMS",
+    "TYPO3",
+    "api",
+    "generator",
+    "code generator"
+  ],
+  "require": {
+    "php": ">=8.0.0",
+    "typo3/cms-core": "^11.5 || 12.*",
+    "typo3/cms-scheduler": "^11.5 || 12.*",
+    "nikic/php-parser": "^4.11",
+    "doctrine/annotations": "^1.0"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest",
+    "friendsofphp/php-cs-fixer": "^2.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Mirko\\T3maker\\": "Classes/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Mirko\\T3maker\\Tests\\": "Tests/"
+    }
+  },
+  "extra": {
+    "typo3/cms": {
+      "cms-package-dir": "{$vendor-dir}/typo3/cms",
+      "web-dir": "web",
+      "extension-key": "t3maker"
+    }
+  }
+}
