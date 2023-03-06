@@ -1,7 +1,17 @@
 services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: true
 
-  Mirko\T3maker\Command\MakeEntityCommand:
+  Mirko\T3maker\:
+    resource: '../Classes/*'
+    exclude: [ '../Classes/Tca/*' ]
+
+  Mirko\T3maker\Command\MakeModelCommand:
     tags:
       - name: 'console.command'
         command: 'make:model'
         description: 'Creates a new Model entity class'
+    arguments:
+      $maker: '@Mirko\T3maker\Maker\ModelMaker'
