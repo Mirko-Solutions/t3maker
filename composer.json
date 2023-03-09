@@ -17,7 +17,9 @@
     "typo3/cms-core": "^11.5 || 12.*",
     "typo3/cms-scheduler": "^11.5 || 12.*",
     "nikic/php-parser": "^4.11",
-    "doctrine/annotations": "^1.0"
+    "doctrine/annotations": "^1.0",
+    "symfony/filesystem": "^5.4.7|^6.0",
+    "symfony/finder": "^5.4.3|^6.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

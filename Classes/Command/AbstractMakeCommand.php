@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Mirko\T3maker\Command;
 
 use JetBrains\PhpStorm\NoReturn;
+use Mirko\T3maker\Generator\Generator;
+use Mirko\T3maker\Maker\MakerInterface;
 use Mirko\T3maker\Utility\Typo3Utility;
 use Mirko\T3maker\Validator\ClassValidator;
 use Symfony\Component\Console\Command\Command;
@@ -21,6 +23,11 @@ abstract class AbstractMakeCommand extends Command
     protected string $extensionName = '';
 
     protected string $extensionPath = '';
+
+    public function __construct(protected MakerInterface $maker, protected Generator $generator, string $name = null)
+    {
+        parent::__construct($name);
+    }
 
     protected function configure(): void
     {

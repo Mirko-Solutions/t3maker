@@ -93,31 +93,9 @@ final class StringUtility
         return strtr(ucwords(strtr($str, ['_' => ' ', '.' => ' ', '\\' => ' '])), [' ' => '']);
     }
 
-    public static function asRoutePath(string $value): string
-    {
-        return '/' . str_replace('_', '/', self::asTwigVariable($value));
-    }
-
-    public static function asRouteName(string $value): string
-    {
-        $routeName = self::asTwigVariable($value);
-
-        return str_starts_with($routeName, 'app_') ? $routeName : 'app_' . $routeName;
-    }
-
     public static function asSnakeCase(string $value): string
     {
         return self::asTwigVariable($value);
-    }
-
-    public static function asCommand(string $value): string
-    {
-        return str_replace('_', '-', self::asTwigVariable($value));
-    }
-
-    public static function asEventMethod(string $eventName): string
-    {
-        return sprintf('on%s', self::asClassName($eventName));
     }
 
     public static function getShortClassName(string $fullClassName): string
@@ -136,8 +114,7 @@ final class StringUtility
 
     public static function asFilePath(string $value): string
     {
-        $value = Container::underscore(trim($value));
-        $value = str_replace('\\', '/', $value);
+        $value = str_replace('\\', '/', trim($value));
 
         return $value;
     }

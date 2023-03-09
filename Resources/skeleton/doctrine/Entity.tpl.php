@@ -6,10 +6,5 @@ namespace <?= $namespace ?>;
 
 class <?= $class_name."\n" ?> extends AbstractEntity
 {
-    private ?int $id = null;
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 }

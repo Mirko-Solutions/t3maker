@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Maker;
 
-use Mirko\T3maker\Generator;
+use Mirko\T3maker\Generator\Generator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 

@@ -4,9 +4,23 @@ services:
     autoconfigure: true
     public: true
 
+  Symfony\Component\Filesystem\Filesystem:
+    public: true
   Mirko\T3maker\:
     resource: '../Classes/*'
-    exclude: [ '../Classes/Tca/*' ]
+    exclude: [ '../Classes/Tca/*', '../Classes/Doctrine/*' ]
+  Mirko\T3maker\Generator\UseStatementGenerator:
+    autowire: false
+  Mirko\T3maker\Utility\ClassNameDetails:
+    autowire: false
+  Mirko\T3maker\Utility\ClassNameValue:
+    autowire: false
+  Mirko\T3maker\Utility\ClassDetails:
+    autowire: false
+  Mirko\T3maker\Utility\ClassSourceManipulator:
+    autowire: false
+  Mirko\T3maker\Utility\PackageDetails:
+    autowire: false
 
   Mirko\T3maker\Command\MakeModelCommand:
     tags:
@@ -15,3 +29,11 @@ services:
         description: 'Creates a new Model entity class'
     arguments:
       $maker: '@Mirko\T3maker\Maker\ModelMaker'
+
+  Mirko\T3maker\Command\MakeTCACommand:
+    tags:
+      - name: 'console.command'
+        command: 'make:tca'
+        description: 'Creates a new TCA for a model'
+    arguments:
+      $maker: '@Mirko\T3maker\Maker\TCAMaker'

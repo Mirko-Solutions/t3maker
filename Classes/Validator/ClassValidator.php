@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Mirko\T3maker\Validator;
 
 use Mirko\T3maker\Utility\StringUtility;
+use Doctrine\Common\Persistence\ManagerRegistry as LegacyManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 
 final class ClassValidator
 {
@@ -70,5 +72,102 @@ final class ClassValidator
         }
 
         return $value;
+    }
+
+    public static function validateDoctrineFieldName(string $name): string
+    {
+        self::validatePropertyName($name);
+
+        return $name;
+    }
+
+    public static function validatePropertyName(string $name): string
+    {
+        // check for valid PHP variable name
+        if (!StringUtility::isValidPhpVariableName($name)) {
+            throw new \InvalidArgumentException(sprintf('"%s" is not a valid PHP property name.', $name));
+        }
+
+        return $name;
+    }
+
+    public static function validateLength($length)
+    {
+        if (!$length) {
+            return $length;
+        }
+
+        $result = filter_var(
+            $length,
+            \FILTER_VALIDATE_INT,
+            [
+                'options' => ['min_range' => 1],
+            ]
+        );
+
+        if (false === $result) {
+            throw new \RuntimeException(sprintf('Invalid length "%s".', $length));
+        }
+
+        return $result;
+    }
+
+    public static function validatePrecision($precision)
+    {
+        if (!$precision) {
+            return $precision;
+        }
+
+        $result = filter_var(
+            $precision,
+            \FILTER_VALIDATE_INT,
+            [
+                'options' => ['min_range' => 1, 'max_range' => 65],
+            ]
+        );
+
+        if (false === $result) {
+            throw new RuntimeCommandException(sprintf('Invalid precision "%s".', $precision));
+        }
+
+        return $result;
+    }
+
+    public static function validateScale($scale)
+    {
+        if (!$scale) {
+            return $scale;
+        }
+
+        $result = filter_var(
+            $scale,
+            \FILTER_VALIDATE_INT,
+            [
+                'options' => ['min_range' => 0, 'max_range' => 30],
+            ]
+        );
+
+        if (false === $result) {
+            throw new \RuntimeException(sprintf('Invalid scale "%s".', $scale));
+        }
+
+        return $result;
+    }
+
+    public static function validateBoolean($value)
+    {
+        if ('yes' == $value) {
+            return true;
+        }
+
+        if ('no' == $value) {
+            return false;
+        }
+
+        if (null === $valueAsBool = filter_var($value, \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE)) {
+            throw new \RuntimeException(sprintf('Invalid bool value "%s".', $value));
+        }
+
+        return $valueAsBool;
     }
 }
