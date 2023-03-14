@@ -21,8 +21,6 @@ return [
     'palettes' => [
         '1' => ['showitem' => '<?= $palettesShowItem; ?>'],
     ],
-    'columns' => [
-        <?= $columns; ?>
-    ],
+    'columns' => <?= $columns; ?>,
 ];
 

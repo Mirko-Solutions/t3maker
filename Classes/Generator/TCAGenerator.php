@@ -19,27 +19,21 @@ class TCAGenerator
 
     /**
      * @param PackageDetails $package
-     * @param string $class
+     * @param ReflectionClass $class
      * @return string
-     * @throws ReflectionException
      */
-    public function generateTCAFromModel(PackageDetails $package, string $class)
+    public function generateTCAFromModel(PackageDetails $package, ReflectionClass $class)
     {
-        $modelReflection = new ReflectionClass($class);
-
-        $TCAColumns = ModelParser::getTCAProperties($modelReflection);
+        $TCAColumns = ModelParser::getTCAProperties($class);
         $columnKeys = array_keys($TCAColumns);
         $columnKeysString = implode(',', $columnKeys);
 
         return $this->generator->generateFile(
             $package,
-            'Configuration/TCA/Test/' . $this->generateTCAFileName(
-                $package->getName(),
-                $modelReflection->getShortName()
-            ),
+            $this->getTcaExtensionFilePath($package, $class),
             'doctrine/TCA.tpl.php',
             [
-                'title' => $modelReflection->getShortName(),
+                'title' => $class->getShortName(),
                 'label' => $columnKeys[0],
                 'interfaceShowRecordFieldList' => $columnKeysString,
                 'typesShowItem' => $columnKeysString,
@@ -47,6 +41,14 @@ class TCAGenerator
                 'columns' => var_export($TCAColumns, true),
             ]
         );
+    }
+
+    public function getTcaExtensionFilePath(PackageDetails $package, ReflectionClass $class): string
+    {
+        return 'Configuration/TCA/Test/' . $this->generateTCAFileName(
+                $package->getName(),
+                $class->getShortName()
+            );
     }
 
     private function generateTCAFileName($extKey, $modelName): string

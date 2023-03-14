@@ -19,27 +19,12 @@ class ModelParser
             }
             // Get the property name and type
             $propertyName = $property->getName();
-            $propertyType = $class->getProperty($propertyName)->getType()?->getName();
-
             // Add the property to the TCA configuration
-            $columns[StringUtility::asSnakeCase($propertyName)] = array(
+            $columns[StringUtility::asSnakeCase($propertyName)] = [
                 'label' => ucfirst($propertyName),
-                'config' => array(
-                    'type' => self::getTcaType($propertyType),
-                    'size' => 30,
-                    'eval' => 'trim',
-                ),
-            );
+                'config' => [],
+            ];
         }
-
         return $columns;
-    }
-
-    private static function getTcaType($propertyType): string
-    {
-        return match ($propertyType) {
-            'bool' => 'check',
-            default => 'input',
-        };
     }
 }

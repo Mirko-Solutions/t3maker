@@ -95,7 +95,7 @@ class ModelMaker extends AbstractMaker
             }
 
             foreach ($fileManagerOperations as $path => $manipulatorOrMessage) {
-                if (\is_string($manipulatorOrMessage)) {
+                if (is_string($manipulator)) {
                     $io->comment($manipulatorOrMessage);
                 } else {
                     $this->fileManager->dumpFile($path, $manipulatorOrMessage->getSourceCode());
@@ -107,6 +107,7 @@ class ModelMaker extends AbstractMaker
             [
                 'Next: When you\'re ready, create a migration with <info>php bin/console make:migration</info>',
                 '',
+                'Next: When you\'re ready, create a TCA with <info>php bin/console make:tca</info>',
             ]
         );
 
