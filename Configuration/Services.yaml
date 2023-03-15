@@ -3,7 +3,11 @@ services:
     autowire: true
     autoconfigure: true
     public: true
-
+  _instanceof:
+    Mirko\T3maker\Typo3\TCA\Config\Type\ConfigTypeInterface:
+      tags: ['t3maker.configtype']
+    Mirko\T3maker\Typo3\TCA\Config\RenderType\ConfigRenderTypeInterface:
+      tags: [ 't3maker.configrendertype' ]
   Symfony\Component\Filesystem\Filesystem:
     public: true
   Mirko\T3maker\:
@@ -21,6 +25,8 @@ services:
     autowire: false
   Mirko\T3maker\Utility\PackageDetails:
     autowire: false
+  Mirko\T3maker\Utility\TCASourceManipulator:
+    autowire: false
 
   Mirko\T3maker\Command\MakeModelCommand:
     tags:
@@ -37,3 +43,8 @@ services:
         description: 'Creates a new TCA for a model'
     arguments:
       $maker: '@Mirko\T3maker\Maker\TCAMaker'
+
+  Mirko\T3maker\Typo3\TCA\TCAConfigProvider:
+    arguments:
+      $configTypes: !tagged_iterator 't3maker.configtype'
+      $configRenderTypes: !tagged_iterator 't3maker.configrendertype'

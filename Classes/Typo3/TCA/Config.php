@@ -4,19 +4,47 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Typo3\TCA;
 
-use Mirko\T3maker\Typo3\TCA\Config\RenderType\ConfigRenderType;
-use Mirko\T3maker\Typo3\TCA\Config\Type\ConfigType;
+use Mirko\T3maker\Typo3\TCA\Config\RenderType\ConfigRenderTypeInterface;
+use Mirko\T3maker\Typo3\TCA\Config\Type\ConfigTypeInterface;
 
 class Config
 {
 
-    private ConfigType $type;
+    private ConfigTypeInterface $type;
 
-    private ConfigRenderType $renderType;
+    private ConfigRenderTypeInterface|null $renderType;
 
-    private int $readOnly = 0;
+    private int|null $readOnly;
 
-    private int $size = 0;
+    private int|null $size;
+    private array|null $renderTypeConfig;
 
-    private array $renderTypeConfig = [];
+    public static function createConfig(ConfigTypeInterface $type): Config
+    {
+        $config = new self();
+        $config->setType($type);
+
+        return $config;
+    }
+
+    public function __toArray(): array
+    {
+       return get_object_vars($this);
+    }
+
+    /**
+     * @return ConfigTypeInterface
+     */
+    public function getType(): ConfigTypeInterface
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param ConfigTypeInterface $type
+     */
+    public function setType(ConfigTypeInterface $type): void
+    {
+        $this->type = $type;
+    }
 }
