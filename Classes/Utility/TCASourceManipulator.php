@@ -44,10 +44,6 @@ class TCASourceManipulator
 
     public function updateColumnConfig(string $columnName, array $config): void
     {
-        if (!$this->propertyExists($columnName)) {
-            return;
-        }
-
         $this->tcaConfiguration['columns'][$columnName] = $config;
     }
 

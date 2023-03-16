@@ -12,24 +12,25 @@ class Config
 
     private ConfigTypeInterface $type;
 
-    private ConfigRenderTypeInterface|null $renderType;
+    private ConfigRenderTypeInterface|null $renderType = null;
+    private array $renderTypeConfig = [];
 
-    private int|null $readOnly;
-
-    private int|null $size;
-    private array|null $renderTypeConfig;
-
-    public static function createConfig(ConfigTypeInterface $type): Config
+    public function __construct(ConfigTypeInterface $type)
     {
-        $config = new self();
-        $config->setType($type);
-
-        return $config;
+        $this->type = $type;
     }
 
     public function __toArray(): array
     {
-       return get_object_vars($this);
+        $config = [
+            'type' => $this->type::getTypeName()
+        ];
+
+        if ($this->renderType) {
+            $config['renderType'] = $this->renderType::getTypeName();
+        }
+
+        return array_merge($config, $this->renderTypeConfig);
     }
 
     /**
@@ -46,5 +47,21 @@ class Config
     public function setType(ConfigTypeInterface $type): void
     {
         $this->type = $type;
+    }
+
+    /**
+     * @param ConfigRenderTypeInterface|null $renderType
+     */
+    public function setRenderType(?ConfigRenderTypeInterface $renderType): void
+    {
+        $this->renderType = $renderType;
+    }
+
+    /**
+     * @param array|null $renderTypeConfig
+     */
+    public function setRenderTypeConfig(?array $renderTypeConfig): void
+    {
+        $this->renderTypeConfig = $renderTypeConfig;
     }
 }

@@ -27,11 +27,15 @@ class TCAColumnFactory
 
         $configType = $this->askConfigurationForPropertyType($propertyTypes);
 
-//        $config = Config::createConfig(type: $configType);
+        $config = new Config($configType);
 
         $renderType = $this->askConfigurationForRenderType($configType);
-        dd($renderType);
-        dd($config->__toArray());
+
+        if ($renderType) {
+            $config->setRenderType($renderType);
+            $renderTypeConfig = $renderType->askRenderTypeDetails($io);
+            $config->setRenderTypeConfig($renderTypeConfig);
+        }
 
         return $config->__toArray();
     }

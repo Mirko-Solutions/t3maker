@@ -76,7 +76,6 @@ class TCAMaker extends AbstractMaker
                 $io
             );
 
-            $columnConfigurations[$columnName] = $newConfig;
             $manipulator->updateColumnConfig($columnName, $newConfig);
 
             if (is_string($manipulator)) {

@@ -7,7 +7,7 @@ namespace Mirko\T3maker\Typo3\TCA\Config\RenderType;
 
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class InputDateTime implements ConfigRenderTypeInterface
+class InputDateTime extends AbstractConfigRenderType
 {
     public const NAME = 'inputDateTime';
 
