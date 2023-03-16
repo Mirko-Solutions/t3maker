@@ -6,13 +6,13 @@ declare(strict_types=1);
 namespace Mirko\T3maker\Typo3\TCA\Config\RenderType;
 
 use Mirko\T3maker\Typo3\TCA\Config\ReusablePropertiesQuestionFactory;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
-class InputDateTime extends AbstractConfigRenderType
+class InputDefault extends AbstractConfigRenderType
 {
-    public const NAME = 'inputDateTime';
+    public const NAME = 'default';
 
     protected array $availableConfigProperties = [
+        ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_SIZE,
         ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_READ_ONLY,
         ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_PLACEHOLDER,
         ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_DEFAULT,

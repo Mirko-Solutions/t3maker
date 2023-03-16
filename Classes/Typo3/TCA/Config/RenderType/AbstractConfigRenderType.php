@@ -8,10 +8,18 @@ namespace Mirko\T3maker\Typo3\TCA\Config\RenderType;
 use Mirko\T3maker\Typo3\TCA\Config\ReusablePropertiesQuestionFactory;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
 {
+    protected array $availableConfigProperties = [];
+
+    public static function getTypeName(): string
+    {
+        return static::NAME;
+    }
+
     public function __construct(private ReusablePropertiesQuestionFactory $propertiesQuestionFactory)
     {
     }
@@ -41,7 +49,7 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
 
         while (true) {
             $question = new ChoiceQuestion(
-                'Choose optional property that you want to add',
+                'Choose optional property that you want to add (press <return> to stop)',
                 $propertiesList,
                 null
             );
@@ -58,5 +66,18 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
         }
 
         return $propertiesConfiguration;
+    }
+
+    public function askRenderTypeDetails(SymfonyStyle $io): array
+    {
+        $question = new ConfirmationQuestion('Do you want to add additional Properties?', false);
+
+        $additionalProperties = $io->askQuestion($question);
+
+        if ($additionalProperties === false) {
+            return [];
+        }
+
+        return $this->askForAdditionalProperties($io, $this->availableConfigProperties);
     }
 }

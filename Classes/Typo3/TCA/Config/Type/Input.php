@@ -6,9 +6,11 @@ declare(strict_types=1);
 namespace Mirko\T3maker\Typo3\TCA\Config\Type;
 
 use Mirko\T3maker\Typo3\TCA\Config\RenderType\ColorPicker;
+use Mirko\T3maker\Typo3\TCA\Config\RenderType\InputDateTime;
+use Mirko\T3maker\Typo3\TCA\Config\RenderType\InputDefault;
 use Symfony\Component\PropertyInfo\Type;
 
-class Input implements ConfigTypeInterface
+class Input extends AbstractConfigType
 {
     public const NAME = 'input';
 
@@ -16,21 +18,8 @@ class Input implements ConfigTypeInterface
         Type::BUILTIN_TYPE_STRING
     ];
     public const POSSIBLE_RENDER_TYPES = [
-        ColorPicker::NAME
+        ColorPicker::NAME,
+        InputDefault::NAME,
+        InputDateTime::NAME,
     ];
-
-    public static function getPossibleRenderTypes(): array
-    {
-        return self::POSSIBLE_RENDER_TYPES;
-    }
-
-    public static function getPossiblePropertyTypes(): array
-    {
-        return self::POSSIBLE_BUILTIN_TYPES;
-    }
-
-    public static function getTypeName(): string
-    {
-        return self::NAME;
-    }
 }

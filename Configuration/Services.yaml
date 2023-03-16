@@ -5,7 +5,7 @@ services:
     public: true
   _instanceof:
     Mirko\T3maker\Typo3\TCA\Config\Type\ConfigTypeInterface:
-      tags: ['t3maker.configtype']
+      tags: [ 't3maker.configtype' ]
     Mirko\T3maker\Typo3\TCA\Config\RenderType\ConfigRenderTypeInterface:
       tags: [ 't3maker.configrendertype' ]
   Symfony\Component\Filesystem\Filesystem:
@@ -26,6 +26,8 @@ services:
   Mirko\T3maker\Utility\PackageDetails:
     autowire: false
   Mirko\T3maker\Utility\TCASourceManipulator:
+    autowire: false
+  Mirko\T3maker\Typo3\TCA\Config:
     autowire: false
 
   Mirko\T3maker\Command\MakeModelCommand:

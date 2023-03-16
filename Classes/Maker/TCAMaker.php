@@ -108,7 +108,7 @@ class TCAMaker extends AbstractMaker
 
         $choices = array_keys($columnConfigurations);
         $question = new ChoiceQuestion(
-            "for which column you want to edit configuration?",
+            "for which column you want to edit configuration? (press <return> to stop)",
             $choices,
             null
         );
