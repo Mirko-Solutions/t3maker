@@ -5,11 +5,21 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Typo3\TCA\Config\Type;
 
-class Check  extends AbstractConfigType
+use Mirko\T3maker\Typo3\TCA\Config\RenderType\CheckDefault;
+use Symfony\Component\PropertyInfo\Type;
+
+class Check extends AbstractConfigType
 {
     public const NAME = 'check';
 
-    public const POSSIBLE_BUILTIN_TYPES = [];
+    public const POSSIBLE_BUILTIN_TYPES = [
+        Type::BUILTIN_TYPE_STRING,
+        Type::BUILTIN_TYPE_INT,
+        Type::BUILTIN_TYPE_ARRAY,
+        Type::BUILTIN_TYPE_OBJECT,
+    ];
 
-    public const POSSIBLE_RENDER_TYPES = [];
+    public const POSSIBLE_RENDER_TYPES = [
+        CheckDefault::class
+    ];
 }

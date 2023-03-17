@@ -77,12 +77,12 @@ class TCAMaker extends AbstractMaker
             );
 
             $manipulator->updateColumnConfig($columnName, $newConfig);
+        }
 
-            if (is_string($manipulator)) {
-                $io->comment($manipulator);
-            } else {
-                $this->fileManager->dumpFile($tcaPath, $manipulator->getSourceCode());
-            }
+        if (is_string($manipulator)) {
+            $io->comment($manipulator);
+        } else {
+            $this->fileManager->dumpFile($tcaPath, $manipulator->getSourceCode());
         }
 
         $this->writeSuccessMessage($io);

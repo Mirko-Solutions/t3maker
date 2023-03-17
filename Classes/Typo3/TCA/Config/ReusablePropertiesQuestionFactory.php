@@ -18,7 +18,7 @@ class ReusablePropertiesQuestionFactory
     public const CONFIG_PROPERTY_READ_ONLY = 'readOnly';
     public const CONFIG_PROPERTY_SIZE = 'size';
     public const CONFIG_PROPERTY_VALUE_PICKER = 'valuePicker';
-
+    public const CONFIG_PROPERTY_ITEMS = 'items';
     public const CONFIG_PROPERTY_PLACEHOLDER = 'placeholder';
 
     private string $property = '';
@@ -31,14 +31,16 @@ class ReusablePropertiesQuestionFactory
         self::CONFIG_PROPERTY_VALUE_PICKER => 'askQuestionForValuePickerProperty',
         self::CONFIG_PROPERTY_SIZE => 'askQuestionForSizeProperty',
         self::CONFIG_PROPERTY_PLACEHOLDER => 'askQuestionForPlaceholderProperty',
+        self::CONFIG_PROPERTY_ITEMS => 'askQuestionForItemsProperty',
     ];
 
     /**
      * @param string $property
      * @param SymfonyStyle $io
+     * @param array $additionalArg
      * @return mixed
      */
-    public function getQuestionForProperty(string $property, SymfonyStyle $io): mixed
+    public function askQuestionForProperty(string $property, SymfonyStyle $io, array $additionalArg = []): mixed
     {
         if (!array_key_exists($property, self::PROPERTY_QUESTION)) {
             throw new \RuntimeException("question configuration not found for property {$property}");
@@ -52,14 +54,14 @@ class ReusablePropertiesQuestionFactory
 
         $this->property = $property;
 
-        return $this->{$method}($io);
+        return $this->{$method}($io, $additionalArg);
     }
 
     /**
      * @param SymfonyStyle $io
      * @return int
      */
-    private function askQuestionForSizeProperty(SymfonyStyle $io): int
+    private function askQuestionForSizeProperty(SymfonyStyle $io, array $additionalArg): int
     {
         $question = new Question('Please enter size');
 
@@ -89,27 +91,52 @@ class ReusablePropertiesQuestionFactory
      * @param SymfonyStyle $io
      * @return string
      */
-    private function askQuestionForReadOnlyProperty(SymfonyStyle $io): mixed
+    private function askQuestionForReadOnlyProperty(SymfonyStyle $io, array $additionalArg): mixed
     {
         return $io->askQuestion($this->createBoolQuestion("Select value for " . self::CONFIG_PROPERTY_READ_ONLY));
     }
 
     /**
      * @param SymfonyStyle $io
+     * @param mixed ...$arg
      * @return string
      */
-    private function askQuestionForEvalProperty(SymfonyStyle $io): string
+    private function askQuestionForEvalProperty(SymfonyStyle $io, array $additionalArg): string
     {
         $question = $this->createTextQuestion('Please enter eval field value');
-        //TODO validator
+
+        if (isset($additionalArg['validation']) && is_array($additionalArg['validation'])) {
+            $validation = $additionalArg['validation'];
+            $question->setValidator(
+                function ($value) use ($validation) {
+                    if ($value === null) {
+                        return '';
+                    }
+
+                    $evalParams = explode(',', $value);
+                    foreach ($validation as $item) {
+                        if (in_array($item, $evalParams, true)) {
+                            return $value;
+                        }
+                    }
+
+                    $values = implode(',', $validation);
+                    throw new \RuntimeException(
+                        "for selected field needs '{$this->property}' set to either to {$values}"
+                    );
+                }
+            );
+        }
+
         return $io->askQuestion($question);
     }
 
     /**
      * @param SymfonyStyle $io
+     * @param mixed ...$arg
      * @return mixed
      */
-    private function askQuestionForPlaceholderProperty(SymfonyStyle $io): string
+    private function askQuestionForPlaceholderProperty(SymfonyStyle $io, array $additionalArg): string
     {
         $question = $this->createTextQuestion('Please enter placeholder value');
 
@@ -120,7 +147,7 @@ class ReusablePropertiesQuestionFactory
      * @param SymfonyStyle $io
      * @return string
      */
-    private function askQuestionForDefaultProperty(SymfonyStyle $io): string
+    private function askQuestionForDefaultProperty(SymfonyStyle $io, array $additionalArg): string
     {
         $question = $this->createTextQuestion('Please enter default value');
 
@@ -131,19 +158,24 @@ class ReusablePropertiesQuestionFactory
      * @param SymfonyStyle $io
      * @return mixed
      */
-    private function askQuestionForAutocompleteProperty(SymfonyStyle $io): mixed
+    private function askQuestionForAutocompleteProperty(SymfonyStyle $io, array $additionalArg): mixed
     {
         return $io->askQuestion($this->createBoolQuestion("Select value for " . self::CONFIG_PROPERTY_AUTOCOMPLETE));
     }
 
     /**
      * @param SymfonyStyle $io
+     * @param array $additionalArg
      * @return array
      */
-    private function askQuestionForValuePickerProperty(SymfonyStyle $io): array
+    private function askQuestionForValuePickerProperty(SymfonyStyle $io, array $additionalArg): array
     {
-        $items = ['items' => []];
+        return ['items' => $this->itemsQuestion($io)];
+    }
 
+    private function itemsQuestion(SymfonyStyle $io): array
+    {
+        $items = [];
         while (true) {
             $itemKey = $io->ask(
                 'Enter item key (press <return> to stop)',
@@ -154,7 +186,7 @@ class ReusablePropertiesQuestionFactory
                         return $name;
                     }
 
-                    if (\in_array($name, $items['items'], true)) {
+                    if (\in_array($name, $items, true)) {
                         throw new \InvalidArgumentException(sprintf('The "%s" key already exists.', $name));
                     }
 
@@ -174,10 +206,15 @@ class ReusablePropertiesQuestionFactory
                 }
             );
 
-            $items['items'][] = [$itemValue, $itemKey];
+            $items[] = [$itemValue, $itemKey];
         }
 
         return $items;
+    }
+
+    private function askQuestionForItemsProperty(SymfonyStyle $io, array $additionalArg): array
+    {
+        return $this->itemsQuestion($io);
     }
 
     /**

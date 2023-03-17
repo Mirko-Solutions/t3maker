@@ -7,26 +7,18 @@ namespace Mirko\T3maker\Typo3\TCA\Config\RenderType;
 
 use Mirko\T3maker\Typo3\TCA\Config\ReusablePropertiesQuestionFactory;
 
-class InputDateTime extends AbstractConfigRenderType
+class CheckDefault extends AbstractConfigRenderType implements DefaultRenderTypeInterface
 {
-    public const NAME = 'inputDateTime';
-
-    /**
-     * @var array
-     */
     protected array $availableConfigProperties = [
         ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_READ_ONLY,
-        ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_PLACEHOLDER,
         ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_DEFAULT,
-        ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_EVAL,
+        ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_ITEMS,
     ];
 
     /**
      * @var array|array[]
      */
     protected array $requiredConfigProperties = [
-        ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_EVAL => [
-            'date', 'datetime', 'time', 'timesec'
-        ],
+        ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_ITEMS => [],
     ];
 }

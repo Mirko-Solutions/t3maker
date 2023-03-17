@@ -8,6 +8,7 @@ namespace Mirko\T3maker\Typo3\TCA\Config\Type;
 use Mirko\T3maker\Typo3\TCA\Config\RenderType\ColorPicker;
 use Mirko\T3maker\Typo3\TCA\Config\RenderType\InputDateTime;
 use Mirko\T3maker\Typo3\TCA\Config\RenderType\InputDefault;
+use Mirko\T3maker\Typo3\TCA\Config\RenderType\InputLink;
 use Symfony\Component\PropertyInfo\Type;
 
 class Input extends AbstractConfigType
@@ -18,8 +19,9 @@ class Input extends AbstractConfigType
         Type::BUILTIN_TYPE_STRING
     ];
     public const POSSIBLE_RENDER_TYPES = [
-        ColorPicker::NAME,
-        InputDefault::NAME,
-        InputDateTime::NAME,
+        ColorPicker::class,
+        InputDefault::class,
+        InputDateTime::class,
+        InputLink::class,
     ];
 }

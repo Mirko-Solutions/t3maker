@@ -5,6 +5,7 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Parser;
 
+use Mirko\T3maker\Typo3\TCA\Config\Type\Input;
 use Mirko\T3maker\Utility\StringUtility;
 use ReflectionClass;
 use ReflectionNamedType;
@@ -26,7 +27,9 @@ class ModelParser
             // Add the property to the TCA configuration
             $columns[StringUtility::asSnakeCase($propertyName)] = [
                 'label' => ucfirst($propertyName),
-                'config' => [],
+                'config' => [
+                    'type' => Input::getTypeName()
+                ],
             ];
         }
         return $columns;

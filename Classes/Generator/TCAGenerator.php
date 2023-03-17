@@ -10,6 +10,7 @@ use Mirko\T3maker\Utility\PackageDetails;
 use Mirko\T3maker\Utility\StringUtility;
 use ReflectionClass;
 use ReflectionException;
+use Symfony\Component\VarExporter\VarExporter;
 
 class TCAGenerator
 {
@@ -38,14 +39,14 @@ class TCAGenerator
                 'interfaceShowRecordFieldList' => $columnKeysString,
                 'typesShowItem' => $columnKeysString,
                 'palettesShowItem' => $columnKeysString,
-                'columns' => var_export($TCAColumns, true),
+                'columns' => VarExporter::export($TCAColumns),
             ]
         );
     }
 
     public function getTcaExtensionFilePath(PackageDetails $package, ReflectionClass $class): string
     {
-        return 'Configuration/TCA/Test/' . $this->generateTCAFileName(
+        return 'Configuration/TCA/' . $this->generateTCAFileName(
                 $package->getName(),
                 $class->getShortName()
             );

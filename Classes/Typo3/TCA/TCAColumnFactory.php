@@ -7,6 +7,7 @@ namespace Mirko\T3maker\Typo3\TCA;
 
 use Mirko\T3maker\Parser\ModelParser;
 use Mirko\T3maker\Typo3\TCA\Config\RenderType\ConfigRenderTypeInterface;
+use Mirko\T3maker\Typo3\TCA\Config\RenderType\DefaultRenderTypeInterface;
 use Mirko\T3maker\Typo3\TCA\Config\Type\ConfigTypeInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -35,6 +36,10 @@ class TCAColumnFactory
             $config->setRenderType($renderType);
             $renderTypeConfig = $renderType->askRenderTypeDetails($io);
             $config->setRenderTypeConfig($renderTypeConfig);
+        }
+
+        if ($renderType instanceof DefaultRenderTypeInterface) {
+            $config->setRenderType(null);
         }
 
         return $config->__toArray();
@@ -67,6 +72,8 @@ class TCAColumnFactory
         foreach ($typeVariants as $typeVariant) {
             $choices[] = $typeVariant::getTypeName();
         }
+
+        $choices = array_unique($choices);
 
         $question = new ChoiceQuestion(
             $message,
@@ -111,6 +118,6 @@ class TCAColumnFactory
             }
         );
 
-        return $this->TCAConfigProvider->getConfigRenderTypeByName($this->io->askQuestion($question));
+        return $this->TCAConfigProvider->getConfigRenderTypeByName($renderTypes, $this->io->askQuestion($question));
     }
 }

@@ -71,7 +71,7 @@ class TCAConfigProvider
     {
         $renderTypeVariants = [];
         foreach ($this->configRenderTypes as $renderType) {
-            if (in_array($renderType::getTypeName(), $configType::getPossibleRenderTypes(), true)) {
+            if (in_array($renderType::class, $configType::getPossibleRenderTypes(), true)) {
                 $renderTypeVariants[] = $renderType;
             }
         }
@@ -96,9 +96,9 @@ class TCAConfigProvider
      * @param string $renderTypeName
      * @return ConfigRenderTypeInterface|null
      */
-    public function getConfigRenderTypeByName(string $renderTypeName): ConfigRenderTypeInterface|null
+    public function getConfigRenderTypeByName($configRenderTypes, string $renderTypeName): ConfigRenderTypeInterface|null
     {
-        foreach ($this->configRenderTypes as $renderType) {
+        foreach ($configRenderTypes as $renderType) {
             if ($renderType::getTypeName() === $renderTypeName) {
                 return $renderType;
             }

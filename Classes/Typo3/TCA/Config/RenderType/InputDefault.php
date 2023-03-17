@@ -7,10 +7,8 @@ namespace Mirko\T3maker\Typo3\TCA\Config\RenderType;
 
 use Mirko\T3maker\Typo3\TCA\Config\ReusablePropertiesQuestionFactory;
 
-class InputDefault extends AbstractConfigRenderType
+class InputDefault extends AbstractConfigRenderType implements DefaultRenderTypeInterface
 {
-    public const NAME = 'default';
-
     protected array $availableConfigProperties = [
         ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_SIZE,
         ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_READ_ONLY,

@@ -5,15 +5,24 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Typo3\TCA\Config\RenderType;
 
+use Doctrine\DBAL\Types\Type;
 use Mirko\T3maker\Typo3\TCA\Config\ReusablePropertiesQuestionFactory;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use TYPO3\CMS\Backend\Configuration\TypoScript\ConditionMatching\ConditionMatcher;
 
 abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
 {
+    /**
+     * @var array
+     */
     protected array $availableConfigProperties = [];
+    /**
+     * @var array|array[]
+     */
+    protected array $requiredConfigProperties = [];
 
     public static function getTypeName(): string
     {
@@ -24,6 +33,55 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
     {
     }
 
+    /**
+     * @param SymfonyStyle $io
+     * @param array $propertiesConfig
+     * @return array
+     */
+    protected function askForRequiredProperties(SymfonyStyle $io, array $propertiesConfig = []): array
+    {
+        $propertiesConfiguration = [];
+        $propertiesList = array_keys($propertiesConfig);
+        $validator = static function ($value) use ($propertiesList) {
+            if (array_key_exists($value, $propertiesList) || in_array($value, $propertiesList, true)) {
+                return $value;
+            }
+
+            throw new InvalidArgumentException(sprintf('Value "%s" is invalid', $value));
+        };
+
+        $normalizer = static function ($value) use ($propertiesList) {
+            return array_key_exists($value, $propertiesList) ? $propertiesList[$value] : $value;
+        };
+
+        while (!empty($propertiesList)) {
+            $question = new ChoiceQuestion(
+                'Choose required property that you want to change',
+                $propertiesList,
+                0
+            );
+            $question->setValidator($validator);
+            $question->setNormalizer($normalizer);
+            $property = $io->askQuestion($question);
+            $propertyConfig = $this->propertiesQuestionFactory->askQuestionForProperty(
+                $property,
+                $io,
+                ['validation' => $propertiesConfig[$property]]
+            );
+            $propertiesConfiguration[$property] = $propertyConfig;
+
+
+            unset($propertiesList[array_search($property, $propertiesList, true)]);
+        }
+
+        return $propertiesConfiguration;
+    }
+
+    /**
+     * @param SymfonyStyle $io
+     * @param array $propertiesList
+     * @return array
+     */
     protected function askForAdditionalProperties(SymfonyStyle $io, array $propertiesList = []): array
     {
         $propertiesConfiguration = [];
@@ -61,8 +119,19 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
                 break;
             }
 
-            $propertyQuestion = $this->propertiesQuestionFactory->getQuestionForProperty($property, $io);
-            $propertiesConfiguration[$property] = $propertyQuestion;
+            $additionalArguments = [];
+
+            if (array_key_exists($property, $this->requiredConfigProperties)) {
+                $additionalArguments = ['validation' => $this->requiredConfigProperties[$property]];
+            }
+
+            $propertyConfig = $this->propertiesQuestionFactory->askQuestionForProperty(
+                $property,
+                $io,
+                $additionalArguments
+            );
+
+            $propertiesConfiguration[$property] = $propertyConfig;
         }
 
         return $propertiesConfiguration;
@@ -70,14 +139,21 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
 
     public function askRenderTypeDetails(SymfonyStyle $io): array
     {
+        $config = [];
+
+        if (!empty($this->requiredConfigProperties)) {
+            $io->text('Configure required properties');
+            $config = $this->askForRequiredProperties($io, $this->requiredConfigProperties);
+        }
+
         $question = new ConfirmationQuestion('Do you want to add additional Properties?', false);
 
         $additionalProperties = $io->askQuestion($question);
 
         if ($additionalProperties === false) {
-            return [];
+            return $config;
         }
 
-        return $this->askForAdditionalProperties($io, $this->availableConfigProperties);
+        return array_merge($config, $this->askForAdditionalProperties($io, $this->availableConfigProperties));
     }
 }

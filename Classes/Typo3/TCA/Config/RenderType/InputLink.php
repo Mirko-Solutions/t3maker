@@ -7,26 +7,14 @@ namespace Mirko\T3maker\Typo3\TCA\Config\RenderType;
 
 use Mirko\T3maker\Typo3\TCA\Config\ReusablePropertiesQuestionFactory;
 
-class InputDateTime extends AbstractConfigRenderType
+class InputLink extends AbstractConfigRenderType
 {
-    public const NAME = 'inputDateTime';
-
-    /**
-     * @var array
-     */
+    public const NAME = 'inputLink';
     protected array $availableConfigProperties = [
+        ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_SIZE,
         ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_READ_ONLY,
         ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_PLACEHOLDER,
         ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_DEFAULT,
         ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_EVAL,
-    ];
-
-    /**
-     * @var array|array[]
-     */
-    protected array $requiredConfigProperties = [
-        ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_EVAL => [
-            'date', 'datetime', 'time', 'timesec'
-        ],
     ];
 }

@@ -13,6 +13,7 @@ use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\VarExporter\VarExporter;
 
 class TCASourceManipulator
 {
@@ -39,20 +40,21 @@ class TCASourceManipulator
 
     public function getSourceCode(): string
     {
-        return '<?php return ' . var_export($this->tcaConfiguration, true) . ';';
+
+        return '<?php return ' . VarExporter::export($this->tcaConfiguration) . ';';
     }
 
     public function updateColumnConfig(string $columnName, array $config): void
     {
-        $this->tcaConfiguration['columns'][$columnName] = $config;
+        $this->tcaConfiguration['columns'][$columnName]['config'] = $config;
     }
 
-    private function getTcaColumns(): array
+    public function getTcaColumns(): array
     {
         return $this->tcaConfiguration['columns'] ?? [];
     }
 
-    private function propertyExists(string $propertyName): bool
+    public function propertyExists(string $propertyName): bool
     {
         if (array_key_exists($propertyName, $this->getTcaColumns())) {
             return true;

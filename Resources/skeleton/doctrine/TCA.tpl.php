@@ -7,7 +7,6 @@ return [
         'title' => '<?= $title; ?>',
         'label' => '<?= $label; ?>',
         //add replace Icon
-        'iconfile' => '',
         'tstamp' => 'tstamp',
         'crdate' => 'crdate',
         'delete' => 'deleted',
