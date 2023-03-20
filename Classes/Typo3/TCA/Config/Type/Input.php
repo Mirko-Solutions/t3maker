@@ -16,7 +16,8 @@ class Input extends AbstractConfigType
     public const NAME = 'input';
 
     public const POSSIBLE_BUILTIN_TYPES = [
-        Type::BUILTIN_TYPE_STRING
+        Type::BUILTIN_TYPE_STRING,
+        Type::BUILTIN_TYPE_INT,
     ];
     public const POSSIBLE_RENDER_TYPES = [
         ColorPicker::class,

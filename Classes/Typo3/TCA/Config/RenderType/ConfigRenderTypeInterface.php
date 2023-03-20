@@ -8,4 +8,5 @@ interface ConfigRenderTypeInterface
 {
     public static function getTypeName(): string;
     public function askRenderTypeDetails(SymfonyStyle $io): array;
+    public function getExampleConfig(): array;
 }

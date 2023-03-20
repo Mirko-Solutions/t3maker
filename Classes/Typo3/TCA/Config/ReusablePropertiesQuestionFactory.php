@@ -5,10 +5,12 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Typo3\TCA\Config;
 
-use Mirko\T3maker\Validator\ClassValidator;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\DataHandling\DataHandler;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class ReusablePropertiesQuestionFactory
 {
@@ -20,6 +22,10 @@ class ReusablePropertiesQuestionFactory
     public const CONFIG_PROPERTY_VALUE_PICKER = 'valuePicker';
     public const CONFIG_PROPERTY_ITEMS = 'items';
     public const CONFIG_PROPERTY_PLACEHOLDER = 'placeholder';
+    public const CONFIG_PROPERTY_FOREIGN_TABLE = 'foreign_table';
+    public const CONFIG_PROPERTY_FOREIGN_TABLE_WHERE = 'foreign_table_where';
+    public const CONFIG_PROPERTY_MIN_ITEMS = 'minitems';
+    public const CONFIG_PROPERTY_MAX_ITEMS = 'maxitems';
 
     private string $property = '';
 
@@ -32,6 +38,10 @@ class ReusablePropertiesQuestionFactory
         self::CONFIG_PROPERTY_SIZE => 'askQuestionForSizeProperty',
         self::CONFIG_PROPERTY_PLACEHOLDER => 'askQuestionForPlaceholderProperty',
         self::CONFIG_PROPERTY_ITEMS => 'askQuestionForItemsProperty',
+        self::CONFIG_PROPERTY_FOREIGN_TABLE => 'askQuestionForForeignTableProperty',
+        self::CONFIG_PROPERTY_FOREIGN_TABLE_WHERE => 'askQuestionForForeignTableWhereProperty',
+        self::CONFIG_PROPERTY_MIN_ITEMS => 'askQuestionForMinItemsProperty',
+        self::CONFIG_PROPERTY_MAX_ITEMS => 'askQuestionForMaxItemsProperty',
     ];
 
     /**
@@ -217,6 +227,42 @@ class ReusablePropertiesQuestionFactory
         return $this->itemsQuestion($io);
     }
 
+    private function askQuestionForForeignTableProperty(SymfonyStyle $io, array $additionalArg): string
+    {
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class);
+        $tables = $queryBuilder->getConnectionForTable('pages')->getSchemaManager()->listTables();
+
+        $tableNames = [];
+
+        foreach ($tables as $table) {
+            $tableNames[] = $table->getName();
+        }
+
+        $question = $this->createTextQuestion('Please enter value for foreign_table', $tableNames);
+
+        return $io->askQuestion($question);
+    }
+
+    private function askQuestionForForeignTableWhereProperty(SymfonyStyle $io, array $additionalArg): string
+    {
+        $question = $this->createTextQuestion('Please enter value for foreign_table_where');
+
+        return $io->askQuestion($question);
+    }
+
+    private function askQuestionForMinItemsProperty(SymfonyStyle $io, array $additionalArg): int
+    {
+        $question = $this->createNumberQuestion('Please enter value for min_items');
+
+        return $io->askQuestion($question);
+    }
+    private function askQuestionForMaxItemsProperty(SymfonyStyle $io, array $additionalArg): int
+    {
+        $question = $this->createNumberQuestion('Please enter value for max_items');
+
+        return $io->askQuestion($question);
+    }
+
     /**
      * @param $message
      * @return ChoiceQuestion
@@ -244,13 +290,39 @@ class ReusablePropertiesQuestionFactory
      * @param $message
      * @return Question
      */
-    private function createTextQuestion($message): Question
+    private function createTextQuestion($message, iterable $autocompleterValues = null): Question
     {
         $question = new Question($message);
-
+        $question->setAutocompleterValues($autocompleterValues);
         $question->setNormalizer(
             function ($value) {
                 return (string)$value;
+            }
+        );
+
+        return $question;
+    }
+
+    /**
+     * @param $message
+     * @return Question
+     */
+    private function createNumberQuestion($message): Question
+    {
+        $question = new Question($message);
+
+        $question->setValidator(
+            static function ($value) {
+                if (preg_match('/^\d+$/', $value)) {
+                   return $value;
+                }
+
+                throw new \RuntimeException('Only number allowed');
+        });
+
+        $question->setNormalizer(
+            function ($value) {
+                return (int)$value;
             }
         );
 

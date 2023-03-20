@@ -34,8 +34,9 @@ class TCAColumnFactory
 
         if ($renderType) {
             $config->setRenderType($renderType);
+            $exampleConfig = $renderType->getExampleConfig();
             $renderTypeConfig = $renderType->askRenderTypeDetails($io);
-            $config->setRenderTypeConfig($renderTypeConfig);
+            $config->setRenderTypeConfig(array_merge($exampleConfig, $renderTypeConfig));
         }
 
         if ($renderType instanceof DefaultRenderTypeInterface) {

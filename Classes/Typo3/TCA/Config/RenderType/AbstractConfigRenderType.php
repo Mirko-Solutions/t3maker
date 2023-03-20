@@ -33,6 +33,11 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
     {
     }
 
+    public function getExampleConfig(): array
+    {
+        return [];
+    }
+
     /**
      * @param SymfonyStyle $io
      * @param array $propertiesConfig
@@ -58,8 +63,9 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
             $question = new ChoiceQuestion(
                 'Choose required property that you want to change',
                 $propertiesList,
-                0
+                array_key_first($propertiesList)
             );
+
             $question->setValidator($validator);
             $question->setNormalizer($normalizer);
             $property = $io->askQuestion($question);
