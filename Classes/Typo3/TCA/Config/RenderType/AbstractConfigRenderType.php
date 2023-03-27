@@ -33,6 +33,11 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
     {
     }
 
+    public function askForConfigPresets(SymfonyStyle $io, \ReflectionProperty $property): array
+    {
+        return [];
+    }
+
     public function getExampleConfig(): array
     {
         return [];

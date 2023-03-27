@@ -5,10 +5,10 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Typo3\TCA\Config\Type;
 
-use Mirko\T3maker\Typo3\TCA\Config\RenderType\ColorPicker;
-use Mirko\T3maker\Typo3\TCA\Config\RenderType\InputDateTime;
-use Mirko\T3maker\Typo3\TCA\Config\RenderType\InputDefault;
-use Mirko\T3maker\Typo3\TCA\Config\RenderType\InputLink;
+use Mirko\T3maker\Typo3\TCA\Config\RenderType\Input\ColorPicker;
+use Mirko\T3maker\Typo3\TCA\Config\RenderType\Input\InputDateTime;
+use Mirko\T3maker\Typo3\TCA\Config\RenderType\Input\InputDefault;
+use Mirko\T3maker\Typo3\TCA\Config\RenderType\Input\InputLink;
 use Symfony\Component\PropertyInfo\Type;
 
 class Input extends AbstractConfigType

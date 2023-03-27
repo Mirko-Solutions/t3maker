@@ -7,10 +7,10 @@ namespace Mirko\T3maker\Typo3\TCA\Config\Type;
 
 use Symfony\Component\PropertyInfo\Type;
 
-class PathThrough extends AbstractConfigType
+class None extends AbstractConfigType
 {
 
-    public const NAME = 'paththrough';
+    public const NAME = 'none';
 
     public const POSSIBLE_BUILTIN_TYPES = [
         Type::BUILTIN_TYPE_INT,

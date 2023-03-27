@@ -31,12 +31,17 @@ class TCAColumnFactory
         $config = new Config($configType);
 
         $renderType = $this->askConfigurationForRenderType($configType);
-
         if ($renderType) {
             $config->setRenderType($renderType);
-            $exampleConfig = $renderType->getExampleConfig();
-            $renderTypeConfig = $renderType->askRenderTypeDetails($io);
-            $config->setRenderTypeConfig(array_merge($exampleConfig, $renderTypeConfig));
+            $preset = $renderType->askForConfigPresets($io, $property);
+            if (!empty($preset)) {
+                $renderTypeConfig = $renderType->askRenderTypeDetails($io);
+                $config->setRenderTypeConfig(array_merge($preset, $renderTypeConfig));
+            } else {
+                $exampleConfig = $renderType->getExampleConfig();
+                $renderTypeConfig = $renderType->askRenderTypeDetails($io);
+                $config->setRenderTypeConfig(array_merge($exampleConfig, $renderTypeConfig));
+            }
         }
 
         if ($renderType instanceof DefaultRenderTypeInterface) {
@@ -102,6 +107,10 @@ class TCAColumnFactory
 
         foreach ($renderTypes as $renderType) {
             $choices[] = $renderType::getTypeName();
+        }
+
+        if (empty($choices)) {
+            return null;
         }
 
         $question = new ChoiceQuestion(

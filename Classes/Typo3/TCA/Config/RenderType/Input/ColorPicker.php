@@ -3,8 +3,9 @@
 declare(strict_types=1);
 
 
-namespace Mirko\T3maker\Typo3\TCA\Config\RenderType;
+namespace Mirko\T3maker\Typo3\TCA\Config\RenderType\Input;
 
+use Mirko\T3maker\Typo3\TCA\Config\RenderType\AbstractConfigRenderType;
 use Mirko\T3maker\Typo3\TCA\Config\ReusablePropertiesQuestionFactory;
 
 class ColorPicker extends AbstractConfigRenderType

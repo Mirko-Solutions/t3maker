@@ -23,9 +23,17 @@ class ReusablePropertiesQuestionFactory
     public const CONFIG_PROPERTY_ITEMS = 'items';
     public const CONFIG_PROPERTY_PLACEHOLDER = 'placeholder';
     public const CONFIG_PROPERTY_FOREIGN_TABLE = 'foreign_table';
+    public const CONFIG_PROPERTY_FOREIGN_FIELD = 'foreign_field';
+    public const CONFIG_PROPERTY_FOREIGN_TABLE_FIELD = 'foreign_table_field';
     public const CONFIG_PROPERTY_FOREIGN_TABLE_WHERE = 'foreign_table_where';
     public const CONFIG_PROPERTY_MIN_ITEMS = 'minitems';
     public const CONFIG_PROPERTY_MAX_ITEMS = 'maxitems';
+    public const CONFIG_PROPERTY_DS = 'ds';
+    public const CONFIG_PROPERTY_BEHAVIOUR = 'behaviour';
+    public const CONFIG_PROPERTY_DS_POINTER_FIELD = 'ds_pointerField';
+    public const CONFIG_PROPERTY_DS_POINTER_FIELD_SEARCH_PARENT = 'ds_pointerField_searchParent';
+    public const CONFIG_PROPERTY_DS_POINTER_FIELD_SEARCH_PARENT_SUB_FIELD = 'ds_pointerField_searchParent_subField';
+    public const CONFIG_PROPERTY_DS_TABLE_FIELD = 'ds_tableField';
 
     private string $property = '';
 
@@ -39,9 +47,17 @@ class ReusablePropertiesQuestionFactory
         self::CONFIG_PROPERTY_PLACEHOLDER => 'askQuestionForPlaceholderProperty',
         self::CONFIG_PROPERTY_ITEMS => 'askQuestionForItemsProperty',
         self::CONFIG_PROPERTY_FOREIGN_TABLE => 'askQuestionForForeignTableProperty',
+        self::CONFIG_PROPERTY_FOREIGN_FIELD => 'askQuestionForForeignFieldProperty',
+        self::CONFIG_PROPERTY_FOREIGN_TABLE_FIELD => 'askQuestionForForeignTableFieldProperty',
         self::CONFIG_PROPERTY_FOREIGN_TABLE_WHERE => 'askQuestionForForeignTableWhereProperty',
         self::CONFIG_PROPERTY_MIN_ITEMS => 'askQuestionForMinItemsProperty',
         self::CONFIG_PROPERTY_MAX_ITEMS => 'askQuestionForMaxItemsProperty',
+        self::CONFIG_PROPERTY_DS => 'askQuestionForDSProperty',
+        self::CONFIG_PROPERTY_BEHAVIOUR => 'askQuestionForBehaviourProperty',
+        self::CONFIG_PROPERTY_DS_TABLE_FIELD => 'askQuestionForDSTableFieldProperty',
+        self::CONFIG_PROPERTY_DS_POINTER_FIELD => 'askQuestionForDSPointerFieldProperty',
+        self::CONFIG_PROPERTY_DS_POINTER_FIELD_SEARCH_PARENT => 'askQuestionForDSPointerFieldSearchParentProperty',
+        self::CONFIG_PROPERTY_DS_POINTER_FIELD_SEARCH_PARENT_SUB_FIELD => 'askQuestionForDSPointerFieldSearchParentSubFieldProperty',
     ];
 
     /**
@@ -227,6 +243,46 @@ class ReusablePropertiesQuestionFactory
         return $this->itemsQuestion($io);
     }
 
+    private function askQuestionForDSProperty(SymfonyStyle $io, array $additionalArg): array
+    {
+        return $this->itemsQuestion($io);
+    }
+
+    private function askQuestionForBehaviourProperty(SymfonyStyle $io, array $additionalArg): array
+    {
+        return $this->itemsQuestion($io);
+    }
+
+    private function askQuestionForDSTableFieldProperty(SymfonyStyle $io, array $additionalArg): string
+    {
+        $question = $this->createTextQuestion('Please enter value for ds_tableField');
+
+        return $io->askQuestion($question);
+    }
+
+    private function askQuestionForDSPointerFieldProperty(SymfonyStyle $io, array $additionalArg): string
+    {
+        $question = $this->createTextQuestion('Please enter value for ds_pointerField');
+
+        return $io->askQuestion($question);
+    }
+
+    private function askQuestionForDSPointerFieldSearchParentProperty(SymfonyStyle $io, array $additionalArg): string
+    {
+        $question = $this->createTextQuestion('Please enter value for ds_pointerField_searchParent');
+
+        return $io->askQuestion($question);
+    }
+
+    private function askQuestionForDSPointerFieldSearchParentSubFieldProperty(
+        SymfonyStyle $io,
+        array $additionalArg
+    ): string {
+        $question = $this->createTextQuestion('Please enter value for ds_pointerField_searchParent_subField');
+
+        return $io->askQuestion($question);
+    }
+
     private function askQuestionForForeignTableProperty(SymfonyStyle $io, array $additionalArg): string
     {
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class);
@@ -239,6 +295,20 @@ class ReusablePropertiesQuestionFactory
         }
 
         $question = $this->createTextQuestion('Please enter value for foreign_table', $tableNames);
+
+        return $io->askQuestion($question);
+    }
+
+    private function askQuestionForForeignFieldProperty(SymfonyStyle $io, array $additionalArg): string
+    {
+        $question = $this->createTextQuestion('Please enter value for foreign_field');
+
+        return $io->askQuestion($question);
+    }
+
+    private function askQuestionForForeignTableFieldProperty(SymfonyStyle $io, array $additionalArg): string
+    {
+        $question = $this->createTextQuestion('Please enter value for foreign_table_field');
 
         return $io->askQuestion($question);
     }
@@ -256,6 +326,7 @@ class ReusablePropertiesQuestionFactory
 
         return $io->askQuestion($question);
     }
+
     private function askQuestionForMaxItemsProperty(SymfonyStyle $io, array $additionalArg): int
     {
         $question = $this->createNumberQuestion('Please enter value for max_items');
@@ -314,11 +385,12 @@ class ReusablePropertiesQuestionFactory
         $question->setValidator(
             static function ($value) {
                 if (preg_match('/^\d+$/', $value)) {
-                   return $value;
+                    return $value;
                 }
 
                 throw new \RuntimeException('Only number allowed');
-        });
+            }
+        );
 
         $question->setNormalizer(
             function ($value) {
