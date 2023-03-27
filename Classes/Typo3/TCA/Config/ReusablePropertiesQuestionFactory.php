@@ -5,16 +5,17 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Typo3\TCA\Config;
 
+use Mirko\T3maker\Utility\StringUtility;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class ReusablePropertiesQuestionFactory
 {
     public const CONFIG_PROPERTY_AUTOCOMPLETE = 'autocomplete';
+
     public const CONFIG_PROPERTY_DEFAULT = 'default';
     public const CONFIG_PROPERTY_EVAL = 'eval';
     public const CONFIG_PROPERTY_READ_ONLY = 'readOnly';
@@ -34,31 +35,11 @@ class ReusablePropertiesQuestionFactory
     public const CONFIG_PROPERTY_DS_POINTER_FIELD_SEARCH_PARENT = 'ds_pointerField_searchParent';
     public const CONFIG_PROPERTY_DS_POINTER_FIELD_SEARCH_PARENT_SUB_FIELD = 'ds_pointerField_searchParent_subField';
     public const CONFIG_PROPERTY_DS_TABLE_FIELD = 'ds_tableField';
+    public const CONFIG_PROPERTY_ALLOWED = 'allowed';
+    public const CONFIG_PROPERTY_DISALLOWED = 'disallowed';
+    public const CONFIG_PROPERTY_MULTIPLE = 'multiple';
 
     private string $property = '';
-
-    private const PROPERTY_QUESTION = [
-        self::CONFIG_PROPERTY_AUTOCOMPLETE => 'askQuestionForAutocompleteProperty',
-        self::CONFIG_PROPERTY_DEFAULT => 'askQuestionForDefaultProperty',
-        self::CONFIG_PROPERTY_EVAL => 'askQuestionForEvalProperty',
-        self::CONFIG_PROPERTY_READ_ONLY => 'askQuestionForReadOnlyProperty',
-        self::CONFIG_PROPERTY_VALUE_PICKER => 'askQuestionForValuePickerProperty',
-        self::CONFIG_PROPERTY_SIZE => 'askQuestionForSizeProperty',
-        self::CONFIG_PROPERTY_PLACEHOLDER => 'askQuestionForPlaceholderProperty',
-        self::CONFIG_PROPERTY_ITEMS => 'askQuestionForItemsProperty',
-        self::CONFIG_PROPERTY_FOREIGN_TABLE => 'askQuestionForForeignTableProperty',
-        self::CONFIG_PROPERTY_FOREIGN_FIELD => 'askQuestionForForeignFieldProperty',
-        self::CONFIG_PROPERTY_FOREIGN_TABLE_FIELD => 'askQuestionForForeignTableFieldProperty',
-        self::CONFIG_PROPERTY_FOREIGN_TABLE_WHERE => 'askQuestionForForeignTableWhereProperty',
-        self::CONFIG_PROPERTY_MIN_ITEMS => 'askQuestionForMinItemsProperty',
-        self::CONFIG_PROPERTY_MAX_ITEMS => 'askQuestionForMaxItemsProperty',
-        self::CONFIG_PROPERTY_DS => 'askQuestionForDSProperty',
-        self::CONFIG_PROPERTY_BEHAVIOUR => 'askQuestionForBehaviourProperty',
-        self::CONFIG_PROPERTY_DS_TABLE_FIELD => 'askQuestionForDSTableFieldProperty',
-        self::CONFIG_PROPERTY_DS_POINTER_FIELD => 'askQuestionForDSPointerFieldProperty',
-        self::CONFIG_PROPERTY_DS_POINTER_FIELD_SEARCH_PARENT => 'askQuestionForDSPointerFieldSearchParentProperty',
-        self::CONFIG_PROPERTY_DS_POINTER_FIELD_SEARCH_PARENT_SUB_FIELD => 'askQuestionForDSPointerFieldSearchParentSubFieldProperty',
-    ];
 
     /**
      * @param string $property
@@ -68,17 +49,15 @@ class ReusablePropertiesQuestionFactory
      */
     public function askQuestionForProperty(string $property, SymfonyStyle $io, array $additionalArg = []): mixed
     {
-        if (!array_key_exists($property, self::PROPERTY_QUESTION)) {
-            throw new \RuntimeException("question configuration not found for property {$property}");
-        }
+        $this->property = $property;
 
-        $method = self::PROPERTY_QUESTION[$property];
+        $propertyCarmelCase = StringUtility::asCamelCase($property);
+
+        $method = "askQuestionFor{$propertyCarmelCase}Property";
 
         if (!method_exists($this, $method)) {
             throw new \RuntimeException("creation method no found for property {$property}");
         }
-
-        $this->property = $property;
 
         return $this->{$method}($io, $additionalArg);
     }
@@ -89,7 +68,7 @@ class ReusablePropertiesQuestionFactory
      */
     private function askQuestionForSizeProperty(SymfonyStyle $io, array $additionalArg): int
     {
-        $question = new Question('Please enter size');
+        $question = $this->createNumberQuestion();
 
         $question->setNormalizer(
             function ($value) {
@@ -99,7 +78,7 @@ class ReusablePropertiesQuestionFactory
         $question->setValidator(
             function ($value) {
                 if ('' === trim($value)) {
-                    throw new \RuntimeException('The size be empty');
+                    throw new \RuntimeException('The size cannot be empty');
                 }
 
                 if (!is_int($value)) {
@@ -119,7 +98,7 @@ class ReusablePropertiesQuestionFactory
      */
     private function askQuestionForReadOnlyProperty(SymfonyStyle $io, array $additionalArg): mixed
     {
-        return $io->askQuestion($this->createBoolQuestion("Select value for " . self::CONFIG_PROPERTY_READ_ONLY));
+        return $io->askQuestion($this->createBoolQuestion());
     }
 
     /**
@@ -129,7 +108,7 @@ class ReusablePropertiesQuestionFactory
      */
     private function askQuestionForEvalProperty(SymfonyStyle $io, array $additionalArg): string
     {
-        $question = $this->createTextQuestion('Please enter eval field value');
+        $question = $this->createTextQuestion();
 
         if (isset($additionalArg['validation']) && is_array($additionalArg['validation'])) {
             $validation = $additionalArg['validation'];
@@ -164,7 +143,7 @@ class ReusablePropertiesQuestionFactory
      */
     private function askQuestionForPlaceholderProperty(SymfonyStyle $io, array $additionalArg): string
     {
-        $question = $this->createTextQuestion('Please enter placeholder value');
+        $question = $this->createTextQuestion();
 
         return $io->askQuestion($question);
     }
@@ -175,7 +154,7 @@ class ReusablePropertiesQuestionFactory
      */
     private function askQuestionForDefaultProperty(SymfonyStyle $io, array $additionalArg): string
     {
-        $question = $this->createTextQuestion('Please enter default value');
+        $question = $this->createTextQuestion();
 
         return $io->askQuestion($question);
     }
@@ -186,7 +165,7 @@ class ReusablePropertiesQuestionFactory
      */
     private function askQuestionForAutocompleteProperty(SymfonyStyle $io, array $additionalArg): mixed
     {
-        return $io->askQuestion($this->createBoolQuestion("Select value for " . self::CONFIG_PROPERTY_AUTOCOMPLETE));
+        return $io->askQuestion($this->createBoolQuestion());
     }
 
     /**
@@ -255,21 +234,21 @@ class ReusablePropertiesQuestionFactory
 
     private function askQuestionForDSTableFieldProperty(SymfonyStyle $io, array $additionalArg): string
     {
-        $question = $this->createTextQuestion('Please enter value for ds_tableField');
+        $question = $this->createTextQuestion();
 
         return $io->askQuestion($question);
     }
 
     private function askQuestionForDSPointerFieldProperty(SymfonyStyle $io, array $additionalArg): string
     {
-        $question = $this->createTextQuestion('Please enter value for ds_pointerField');
+        $question = $this->createTextQuestion();
 
         return $io->askQuestion($question);
     }
 
     private function askQuestionForDSPointerFieldSearchParentProperty(SymfonyStyle $io, array $additionalArg): string
     {
-        $question = $this->createTextQuestion('Please enter value for ds_pointerField_searchParent');
+        $question = $this->createTextQuestion();
 
         return $io->askQuestion($question);
     }
@@ -278,7 +257,7 @@ class ReusablePropertiesQuestionFactory
         SymfonyStyle $io,
         array $additionalArg
     ): string {
-        $question = $this->createTextQuestion('Please enter value for ds_pointerField_searchParent_subField');
+        $question = $this->createTextQuestion();
 
         return $io->askQuestion($question);
     }
@@ -294,42 +273,63 @@ class ReusablePropertiesQuestionFactory
             $tableNames[] = $table->getName();
         }
 
-        $question = $this->createTextQuestion('Please enter value for foreign_table', $tableNames);
+        $question = $this->createTextQuestion(autocompleterValues: $tableNames);
 
         return $io->askQuestion($question);
     }
 
     private function askQuestionForForeignFieldProperty(SymfonyStyle $io, array $additionalArg): string
     {
-        $question = $this->createTextQuestion('Please enter value for foreign_field');
+        $question = $this->createTextQuestion();
 
         return $io->askQuestion($question);
     }
 
     private function askQuestionForForeignTableFieldProperty(SymfonyStyle $io, array $additionalArg): string
     {
-        $question = $this->createTextQuestion('Please enter value for foreign_table_field');
+        $question = $this->createTextQuestion();
 
         return $io->askQuestion($question);
     }
 
     private function askQuestionForForeignTableWhereProperty(SymfonyStyle $io, array $additionalArg): string
     {
-        $question = $this->createTextQuestion('Please enter value for foreign_table_where');
+        $question = $this->createTextQuestion();
 
         return $io->askQuestion($question);
     }
 
     private function askQuestionForMinItemsProperty(SymfonyStyle $io, array $additionalArg): int
     {
-        $question = $this->createNumberQuestion('Please enter value for min_items');
+        $question = $this->createNumberQuestion();
 
         return $io->askQuestion($question);
     }
 
     private function askQuestionForMaxItemsProperty(SymfonyStyle $io, array $additionalArg): int
     {
-        $question = $this->createNumberQuestion('Please enter value for max_items');
+        $question = $this->createNumberQuestion();
+
+        return $io->askQuestion($question);
+    }
+
+    private function askQuestionForAllowedProperty(SymfonyStyle $io, array $additionalArg): int
+    {
+        $question = $this->createTextQuestion();
+
+        return $io->askQuestion($question);
+    }
+
+    private function askQuestionForDisallowedProperty(SymfonyStyle $io, array $additionalArg): int
+    {
+        $question = $this->createTextQuestion();
+
+        return $io->askQuestion($question);
+    }
+
+    private function askQuestionForMultipleProperty(SymfonyStyle $io, array $additionalArg): int
+    {
+        $question = $this->createBoolQuestion();
 
         return $io->askQuestion($question);
     }
@@ -338,9 +338,13 @@ class ReusablePropertiesQuestionFactory
      * @param $message
      * @return ChoiceQuestion
      */
-    private function createBoolQuestion($message): ChoiceQuestion
+    private function createBoolQuestion($message = null,): ChoiceQuestion
     {
         $choices = ['0', '1'];
+
+        if ($message === null) {
+            $message = 'Select value for' . $this->property;
+        }
 
         $question = new ChoiceQuestion(
             $message,
@@ -361,8 +365,12 @@ class ReusablePropertiesQuestionFactory
      * @param $message
      * @return Question
      */
-    private function createTextQuestion($message, iterable $autocompleterValues = null): Question
+    private function createTextQuestion($message = null, iterable $autocompleterValues = null): Question
     {
+        if ($message === null) {
+            $message = 'Please enter value for ' . $this->property;
+        }
+
         $question = new Question($message);
         $question->setAutocompleterValues($autocompleterValues);
         $question->setNormalizer(
@@ -378,8 +386,12 @@ class ReusablePropertiesQuestionFactory
      * @param $message
      * @return Question
      */
-    private function createNumberQuestion($message): Question
+    private function createNumberQuestion($message = null): Question
     {
+        if ($message === null) {
+            $message = 'Please enter value for ' . $this->property;
+        }
+
         $question = new Question($message);
 
         $question->setValidator(
