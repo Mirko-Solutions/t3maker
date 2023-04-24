@@ -6,9 +6,7 @@ declare(strict_types=1);
 namespace Mirko\T3maker\Command;
 
 use JetBrains\PhpStorm\NoReturn;
-use Mirko\T3maker\Utility\PackageDetails;
 use Mirko\T3maker\Utility\PackageUtility;
-use Mirko\T3maker\Utility\StringUtility;
 use Mirko\T3maker\Utility\Typo3Utility;
 use Mirko\T3maker\Validator\ClassValidator;
 use Symfony\Component\Console\Input\InputArgument;
@@ -16,7 +14,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
-use TYPO3\CMS\Core\Package\Package;
 
 final class MakeTCACommand extends AbstractMakeCommand
 {

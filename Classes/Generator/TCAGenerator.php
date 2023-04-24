@@ -9,7 +9,6 @@ use Mirko\T3maker\Parser\ModelParser;
 use Mirko\T3maker\Utility\PackageDetails;
 use Mirko\T3maker\Utility\StringUtility;
 use ReflectionClass;
-use ReflectionException;
 use Symfony\Component\VarExporter\VarExporter;
 
 class TCAGenerator

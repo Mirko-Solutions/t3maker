@@ -28,6 +28,7 @@ use Symfony\Bundle\MakerBundle\Doctrine\RelationOneToMany;
 use Symfony\Bundle\MakerBundle\Doctrine\RelationOneToOne;
 use Symfony\Bundle\MakerBundle\Str;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 
 /**
  * @internal
@@ -575,8 +576,8 @@ final class ClassSourceManipulator
             $relation->getTargetClassName()
         );
 
-        $arrayCollectionTypeHint = $this->addUseStatementIfNecessary(ArrayCollection::class);
-        $collectionTypeHint = $this->addUseStatementIfNecessary(Collection::class);
+        $arrayCollectionTypeHint = $this->addUseStatementIfNecessary(ObjectStorage::class);
+        $collectionTypeHint = $this->addUseStatementIfNecessary(ObjectStorage::class);
 
         $annotationOptions = [
             'targetEntity' => new ClassNameValue($typeHint, $relation->getTargetClassName()),
@@ -641,125 +642,6 @@ final class ClassSourceManipulator
         );
 
         $argName = Str::pluralCamelCaseToSingular($relation->getPropertyName());
-
-        // adder method
-        $adderNodeBuilder = (new Builder\Method($relation->getAdderMethodName()))->makePublic();
-
-        $paramBuilder = new Builder\Param($argName);
-        $paramBuilder->setType($typeHint);
-        $adderNodeBuilder->addParam($paramBuilder->getNode());
-
-        // if (!$this->avatars->contains($avatar))
-        $containsMethodCallNode = new Node\Expr\MethodCall(
-            new Node\Expr\PropertyFetch(new Node\Expr\Variable('this'), $relation->getPropertyName()),
-            'contains',
-            [new Node\Expr\Variable($argName)]
-        );
-        $ifNotContainsStmt = new Node\Stmt\If_(
-            new Node\Expr\BooleanNot($containsMethodCallNode)
-        );
-        $adderNodeBuilder->addStmt($ifNotContainsStmt);
-
-        // append the item
-        $ifNotContainsStmt->stmts[] = new Node\Stmt\Expression(
-            new Node\Expr\MethodCall(
-                new Node\Expr\PropertyFetch(new Node\Expr\Variable('this'), $relation->getPropertyName()),
-                'add',
-                [new Node\Expr\Variable($argName)]
-            )
-        );
-
-        // set the owning side of the relationship
-        if (!$relation->isOwning()) {
-            $ifNotContainsStmt->stmts[] = new Node\Stmt\Expression(
-                new Node\Expr\MethodCall(
-                    new Node\Expr\Variable($argName),
-                    $relation->getTargetSetterMethodName(),
-                    [new Node\Expr\Variable('this')]
-                )
-            );
-        }
-
-        $this->makeMethodFluent($adderNodeBuilder);
-        $this->addMethod($adderNodeBuilder->getNode());
-
-        /*
-         * Remover
-         */
-        $removerNodeBuilder = (new Builder\Method($relation->getRemoverMethodName()))->makePublic();
-
-        $paramBuilder = new Builder\Param($argName);
-        $paramBuilder->setTypeHint($typeHint);
-        $removerNodeBuilder->addParam($paramBuilder->getNode());
-
-        // $this->avatars->removeElement($avatar)
-        $removeElementCall = new Node\Expr\MethodCall(
-            new Node\Expr\PropertyFetch(new Node\Expr\Variable('this'), $relation->getPropertyName()),
-            'removeElement',
-            [new Node\Expr\Variable($argName)]
-        );
-
-        // set the owning side of the relationship
-        if ($relation->isOwning()) {
-            // $this->avatars->removeElement($avatar);
-            $removerNodeBuilder->addStmt(BuilderHelpers::normalizeStmt($removeElementCall));
-        } else {
-            // if ($this->avatars->removeElement($avatar))
-            $ifRemoveElementStmt = new Node\Stmt\If_($removeElementCall);
-            $removerNodeBuilder->addStmt($ifRemoveElementStmt);
-            if ($relation instanceof RelationOneToMany) {
-                // OneToMany: $student->setCourse(null);
-                /*
-                 * // set the owning side to null (unless already changed)
-                 * if ($student->getCourse() === $this) {
-                 *     $student->setCourse(null);
-                 * }
-                 */
-
-                $ifRemoveElementStmt->stmts[] = $this->createSingleLineCommentNode(
-                    'set the owning side to null (unless already changed)',
-                    self::CONTEXT_CLASS_METHOD
-                );
-
-                // if ($student->getCourse() === $this) {
-                $ifNode = new Node\Stmt\If_(
-                    new Node\Expr\BinaryOp\Identical(
-                        new Node\Expr\MethodCall(
-                            new Node\Expr\Variable($argName),
-                            $relation->getTargetGetterMethodName()
-                        ),
-                        new Node\Expr\Variable('this')
-                    )
-                );
-
-                // $student->setCourse(null);
-                $ifNode->stmts = [
-                    new Node\Stmt\Expression(
-                        new Node\Expr\MethodCall(
-                            new Node\Expr\Variable($argName),
-                            $relation->getTargetSetterMethodName(),
-                            [new Node\Arg($this->createNullConstant())]
-                        )
-                    ),
-                ];
-
-                $ifRemoveElementStmt->stmts[] = $ifNode;
-            } elseif ($relation instanceof RelationManyToMany) {
-                // $student->removeCourse($this);
-                $ifRemoveElementStmt->stmts[] = new Node\Stmt\Expression(
-                    new Node\Expr\MethodCall(
-                        new Node\Expr\Variable($argName),
-                        $relation->getTargetRemoverMethodName(),
-                        [new Node\Expr\Variable('this')]
-                    )
-                );
-            } else {
-                throw new \Exception('Unknown relation type');
-            }
-        }
-
-        $this->makeMethodFluent($removerNodeBuilder);
-        $this->addMethod($removerNodeBuilder->getNode());
     }
 
     private function addStatementToConstructor(Node\Stmt $stmt): void
@@ -983,7 +865,7 @@ final class ClassSourceManipulator
         $this->newStmts = $traverser->traverse($this->oldStmts);
     }
 
-    private function getClassNode(): Node\Stmt\Class_
+    private function getClassNode(): Node
     {
         $node = $this->findFirstNode(
             function ($node) {
@@ -998,7 +880,7 @@ final class ClassSourceManipulator
         return $node;
     }
 
-    private function getNamespaceNode(): Node\Stmt\Namespace_
+    private function getNamespaceNode(): Node
     {
         $node = $this->findFirstNode(
             function ($node) {

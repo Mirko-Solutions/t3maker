@@ -73,6 +73,11 @@ class TCAColumnFactory
             $message = "available config types for property with builtin type {$propertyTypeNames} please select one";
         }
 
+        if (empty($typeVariants)) {
+            $typeVariants = $this->TCAConfigProvider->getAllAvailableConfigTypes();
+            $message = 'available config types, please select one';
+        }
+
         $choices = [];
 
         foreach ($typeVariants as $typeVariant) {

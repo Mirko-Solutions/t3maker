@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Mirko\T3maker\Validator;
 
 use Mirko\T3maker\Utility\StringUtility;
-use Doctrine\Common\Persistence\ManagerRegistry as LegacyManagerRegistry;
-use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Bundle\MakerBundle\Exception\RuntimeCommandException;
 
 final class ClassValidator
 {
@@ -25,6 +24,13 @@ final class ClassValidator
         'int', 'float', 'bool', 'string', 'true', 'false', 'null', 'void',
         'iterable', 'object', '__file__', '__line__', '__dir__', '__function__', '__class__',
         '__method__', '__namespace__', '__trait__', 'self', 'parent',
+    ];
+    public const RESERVED_WORDS_FOR_PROPERTIES = [
+        "id", "createdAt", "updatedAt",
+        "version", "deletedAt", "uid",
+        "pid", "tstamp", "crdate",
+        "cruser_id", "deleted", "hidden",
+        "starttime", "endtime"
     ];
 
     /**
@@ -76,6 +82,14 @@ final class ClassValidator
 
     public static function validateDoctrineFieldName(string $name): string
     {
+
+        $reservedKeywords = self::RESERVED_WORDS_FOR_PROPERTIES;
+
+        if (\in_array(strtolower($name), $reservedKeywords, true)) {
+            throw new \RuntimeException(
+                sprintf('"%s" is a reserved keyword and thus cannot be used as property name.', $name)
+            );
+        }
         self::validatePropertyName($name);
 
         return $name;
@@ -127,7 +141,7 @@ final class ClassValidator
         );
 
         if (false === $result) {
-            throw new RuntimeCommandException(sprintf('Invalid precision "%s".', $precision));
+            throw new \RuntimeException(sprintf('Invalid precision "%s".', $precision));
         }
 
         return $result;
@@ -169,5 +183,14 @@ final class ClassValidator
         }
 
         return $valueAsBool;
+    }
+
+    public static function notBlank(string $value = null): string
+    {
+        if (null === $value || '' === $value) {
+            throw new RuntimeCommandException('This value cannot be blank.');
+        }
+
+        return $value;
     }
 }

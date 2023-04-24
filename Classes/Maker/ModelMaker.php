@@ -12,6 +12,7 @@ use Mirko\T3maker\Generator\EntityClassGenerator;
 use Mirko\T3maker\Generator\Generator;
 use Mirko\T3maker\Utility\ClassSourceManipulator;
 use Mirko\T3maker\Utility\PackageDetails;
+use Mirko\T3maker\Utility\PackageUtility;
 use Mirko\T3maker\Utility\StringUtility;
 use Mirko\T3maker\Utility\Typo3Utility;
 use Mirko\T3maker\Validator\ClassValidator;
@@ -22,8 +23,14 @@ use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 
 class ModelMaker extends AbstractMaker
 {
-    public function __construct(private EntityClassGenerator $entityClassGenerator, private FileManager $fileManager)
-    {
+    public const MODEL_NAME_SPACE = 'Domain\\Model';
+
+    private PackageDetails $package;
+
+    public function __construct(
+        private EntityClassGenerator $entityClassGenerator,
+        private FileManager $fileManager
+    ) {
     }
 
     #[NoReturn] public function generate(InputInterface $input, SymfonyStyle $io, Generator $generator): void
@@ -31,12 +38,13 @@ class ModelMaker extends AbstractMaker
         $overwrite = $input->getOption('overwrite');
         $extensionName = $input->getArgument('extensionName');
         $package = PackageDetails::createInstance($extensionName);
+        $this->package = $package;
         $this->fetchExtensionNamespace($io, $package);
         $this->fileManager->setRootDirectory(Typo3Utility::getExtensionPath($package->getName()));
 
         $entityClassDetails = $generator->createClassNameDetails(
             $input->getArgument('name'),
-            $package->getNamespace() . 'Domain\\Model\\',
+            $package->getNamespace() . self::MODEL_NAME_SPACE,
         );
 
         $classExists = class_exists($entityClassDetails->getFullName());
@@ -89,7 +97,68 @@ class ModelMaker extends AbstractMaker
 
                 $currentFields[] = $newField['fieldName'];
             } elseif ($newField instanceof EntityRelation) {
-                //TODO implement relation type
+                // both overridden below for OneToMany
+                $newFieldName = $newField->getOwningProperty();
+                if ($newField->isSelfReferencing()) {
+                    $otherManipulatorFilename = $entityPath;
+                    $otherManipulator = $manipulator;
+                } else {
+                    $otherManipulatorFilename = $this->getPathOfClass($newField->getInverseClass());
+                    $otherManipulator = $this->createClassManipulator($otherManipulatorFilename, $io, $overwrite);
+                }
+                switch ($newField->getType()) {
+                    case EntityRelation::MANY_TO_ONE:
+                        if ($newField->getOwningClass() === $entityClassDetails->getFullName()) {
+                            // THIS class will receive the ManyToOne
+                            $manipulator->addManyToOneRelation($newField->getOwningRelation());
+
+                            if ($newField->getMapInverseRelation()) {
+                                $otherManipulator->addOneToManyRelation($newField->getInverseRelation());
+                            }
+                        } else {
+                            // the new field being added to THIS entity is the inverse
+                            $newFieldName = $newField->getInverseProperty();
+                            $otherManipulatorFilename = $this->getPathOfClass($newField->getOwningClass());
+                            $otherManipulator = $this->createClassManipulator(
+                                $otherManipulatorFilename,
+                                $io,
+                                $overwrite
+                            );
+
+                            // The *other* class will receive the ManyToOne
+                            $otherManipulator->addManyToOneRelation($newField->getOwningRelation());
+                            if (!$newField->getMapInverseRelation()) {
+                                throw new \Exception(
+                                    'Somehow a OneToMany relationship is being created, but the inverse side will not be mapped?'
+                                );
+                            }
+                            $manipulator->addOneToManyRelation($newField->getInverseRelation());
+                        }
+
+                        break;
+                    case EntityRelation::MANY_TO_MANY:
+                        $manipulator->addManyToManyRelation($newField->getOwningRelation());
+                        if ($newField->getMapInverseRelation()) {
+                            $otherManipulator->addManyToManyRelation($newField->getInverseRelation());
+                        }
+
+                        break;
+                    case EntityRelation::ONE_TO_ONE:
+                        $manipulator->addOneToOneRelation($newField->getOwningRelation());
+                        if ($newField->getMapInverseRelation()) {
+                            $otherManipulator->addOneToOneRelation($newField->getInverseRelation());
+                        }
+
+                        break;
+                    default:
+                        throw new \Exception('Invalid relation type');
+                }
+
+                // save the inverse side if it's being mapped
+                if ($newField->getMapInverseRelation()) {
+                    $fileManagerOperations[$otherManipulatorFilename] = $otherManipulator;
+                }
+                $currentFields[] = $newFieldName;
             } else {
                 throw new \Exception('Invalid value');
             }
@@ -141,7 +210,7 @@ class ModelMaker extends AbstractMaker
         array $fields,
         string $entityClass,
         bool $isFirstField
-    ): array|null {
+    ): EntityRelation|array|null {
         $io->writeln('');
 
         if ($isFirstField) {
@@ -219,8 +288,7 @@ class ModelMaker extends AbstractMaker
 
         if ('relation' === $type || in_array($type, EntityRelation::getValidRelationTypes(), true)) {
             //TODO implement relation types
-            $io->warning("Sorry but creating relation is not possible at this moment, will coming soon");
-//            return $this->askRelationDetails($io, $entityClass, $type, $fieldName);
+            return $this->askRelationDetails($io, $entityClass, $type, $fieldName);
         }
 
         // this is a normal field
@@ -277,7 +345,6 @@ class ModelMaker extends AbstractMaker
             ],
             'relation' => [
                 'relation' => 'a wizard will help you build the relation',
-                EntityRelation::MANY_TO_ONE => [],
                 EntityRelation::ONE_TO_MANY => [],
                 EntityRelation::MANY_TO_MANY => [],
                 EntityRelation::ONE_TO_ONE => [],
@@ -339,5 +406,335 @@ class ModelMaker extends AbstractMaker
         // empty the values
         $allTypes = array_map(static fn() => [], $allTypes);
         $printSection($allTypes);
+    }
+
+    private function askRelationDetails(
+        SymfonyStyle $io,
+        string $generatedEntityClass,
+        string $type,
+        string $newFieldName
+    ): EntityRelation {
+        // ask the targetEntity
+        $targetEntityClass = null;
+        while (null === $targetEntityClass) {
+            $question = $this->createEntityClassQuestion('What class should this entity be related to?');
+
+            $answeredEntityClass = $io->askQuestion($question);
+            // find the correct class name - but give priority over looking
+            // in the Entity namespace versus just checking the full class
+            // name to avoid issues with classes like "Directory" that exist
+            // in PHP's core.
+            if (class_exists($this->package->getNamespace() . '\\' . $answeredEntityClass)) {
+                $targetEntityClass = $this->package->getNamespace() . '\\' . $answeredEntityClass;
+            } elseif (class_exists($answeredEntityClass)) {
+                $targetEntityClass = $answeredEntityClass;
+            } else {
+                $io->error(sprintf('Unknown class "%s"', $answeredEntityClass));
+                continue;
+            }
+        }
+
+        // help the user select the type
+        if ('relation' === $type) {
+            $type = $this->askRelationType($io, $generatedEntityClass, $targetEntityClass);
+        }
+
+        $askFieldName = fn(string $targetClass, string $defaultValue) => $io->ask(
+            sprintf('New field name inside %s', StringUtility::getShortClassName($targetClass)),
+            $defaultValue,
+            function ($name) use ($targetClass) {
+                // it's still *possible* to create duplicate properties - by
+                // trying to generate the same property 2 times during the
+                // same make:entity run. property_exists() only knows about
+                // properties that *originally* existed on this class.
+                if (property_exists($targetClass, $name)) {
+                    throw new \InvalidArgumentException(
+                        sprintf('The "%s" class already has a "%s" property.', $targetClass, $name)
+                    );
+                }
+
+                return ClassValidator::validateDoctrineFieldName($name);
+            }
+        );
+
+        $askIsNullable = static fn(string $propertyName, string $targetClass) => $io->confirm(
+            sprintf(
+                'Is the <comment>%s</comment>.<comment>%s</comment> property allowed to be null (nullable)?',
+                StringUtility::getShortClassName($targetClass),
+                $propertyName
+            )
+        );
+
+        $askOrphanRemoval = static function (string $owningClass, string $inverseClass) use ($io) {
+            $io->text(
+                [
+                    'Do you want to activate <comment>orphanRemoval</comment> on your relationship?',
+                    sprintf(
+                        'A <comment>%s</comment> is "orphaned" when it is removed from its related <comment>%s</comment>.',
+                        StringUtility::getShortClassName($owningClass),
+                        StringUtility::getShortClassName($inverseClass)
+                    ),
+                    sprintf(
+                        'e.g. <comment>$%s->remove%s($%s)</comment>',
+                        StringUtility::asLowerCamelCase(StringUtility::getShortClassName($inverseClass)),
+                        StringUtility::asCamelCase(StringUtility::getShortClassName($owningClass)),
+                        StringUtility::asLowerCamelCase(StringUtility::getShortClassName($owningClass))
+                    ),
+                    '',
+                    sprintf(
+                        'NOTE: If a <comment>%s</comment> may *change* from one <comment>%s</comment> to another, answer "no".',
+                        StringUtility::getShortClassName($owningClass),
+                        StringUtility::getShortClassName($inverseClass)
+                    ),
+                ]
+            );
+
+            return $io->confirm(
+                sprintf(
+                    'Do you want to automatically delete orphaned <comment>%s</comment> objects (orphanRemoval)?',
+                    $owningClass
+                ),
+                false
+            );
+        };
+
+        $askInverseSide = function (EntityRelation $relation) use ($io) {
+            if ($this->isClassInVendor($relation->getInverseClass())) {
+                $relation->setMapInverseRelation(false);
+
+                return;
+            }
+
+            // recommend an inverse side, except for OneToOne, where it's inefficient
+            $recommendMappingInverse = EntityRelation::ONE_TO_ONE !== $relation->getType();
+
+            $getterMethodName = 'get' . StringUtility::asCamelCase(
+                    StringUtility::getShortClassName($relation->getOwningClass())
+                );
+            if (EntityRelation::ONE_TO_ONE !== $relation->getType()) {
+                // pluralize!
+                $getterMethodName = StringUtility::singularCamelCaseToPluralCamelCase($getterMethodName);
+            }
+            $mapInverse = $io->confirm(
+                sprintf(
+                    'Do you want to add a new property to <comment>%s</comment> so that you can access/update <comment>%s</comment> objects from it - e.g. <comment>$%s->%s()</comment>?',
+                    StringUtility::getShortClassName($relation->getInverseClass()),
+                    StringUtility::getShortClassName($relation->getOwningClass()),
+                    StringUtility::asLowerCamelCase(StringUtility::getShortClassName($relation->getInverseClass())),
+                    $getterMethodName
+                ),
+                $recommendMappingInverse
+            );
+            $relation->setMapInverseRelation($mapInverse);
+        };
+
+        switch ($type) {
+            case EntityRelation::ONE_TO_MANY:
+                // we *actually* create a ManyToOne, but populate it differently
+                $relation = new EntityRelation(
+                    EntityRelation::MANY_TO_ONE,
+                    $targetEntityClass,
+                    $generatedEntityClass
+                );
+                $relation->setInverseProperty($newFieldName);
+
+                $io->comment(
+                    sprintf(
+                        'A new property will also be added to the <comment>%s</comment> class so that you can access and set the related <comment>%s</comment> object from it.',
+                        StringUtility::getShortClassName($relation->getOwningClass()),
+                        StringUtility::getShortClassName($relation->getInverseClass())
+                    )
+                );
+                $relation->setOwningProperty(
+                    $askFieldName(
+                        $relation->getOwningClass(),
+                        StringUtility::asLowerCamelCase(StringUtility::getShortClassName($relation->getInverseClass()))
+                    )
+                );
+
+                $relation->setIsNullable(
+                    $askIsNullable(
+                        $relation->getOwningProperty(),
+                        $relation->getOwningClass()
+                    )
+                );
+
+                if (!$relation->isNullable()) {
+                    $relation->setOrphanRemoval(
+                        $askOrphanRemoval(
+                            $relation->getOwningClass(),
+                            $relation->getInverseClass()
+                        )
+                    );
+                }
+
+                break;
+            case EntityRelation::MANY_TO_MANY:
+                $relation = new EntityRelation(
+                    EntityRelation::MANY_TO_MANY,
+                    $generatedEntityClass,
+                    $targetEntityClass
+                );
+                $relation->setOwningProperty($newFieldName);
+
+                $askInverseSide($relation);
+                if ($relation->getMapInverseRelation()) {
+                    $io->comment(
+                        sprintf(
+                            'A new property will also be added to the <comment>%s</comment> class so that you can access the related <comment>%s</comment> objects from it.',
+                            StringUtility::getShortClassName($relation->getInverseClass()),
+                            StringUtility::getShortClassName($relation->getOwningClass())
+                        )
+                    );
+                    $relation->setInverseProperty(
+                        $askFieldName(
+                            $relation->getInverseClass(),
+                            StringUtility::singularCamelCaseToPluralCamelCase(
+                                StringUtility::getShortClassName($relation->getOwningClass())
+                            )
+                        )
+                    );
+                }
+
+                break;
+            case EntityRelation::ONE_TO_ONE:
+                $relation = new EntityRelation(
+                    EntityRelation::ONE_TO_ONE,
+                    $generatedEntityClass,
+                    $targetEntityClass
+                );
+                $relation->setOwningProperty($newFieldName);
+
+                $relation->setIsNullable(
+                    $askIsNullable(
+                        $relation->getOwningProperty(),
+                        $relation->getOwningClass()
+                    )
+                );
+
+                $askInverseSide($relation);
+                if ($relation->getMapInverseRelation()) {
+                    $io->comment(
+                        sprintf(
+                            'A new property will also be added to the <comment>%s</comment> class so that you can access the related <comment>%s</comment> object from it.',
+                            StringUtility::getShortClassName($relation->getInverseClass()),
+                            StringUtility::getShortClassName($relation->getOwningClass())
+                        )
+                    );
+                    $relation->setInverseProperty(
+                        $askFieldName(
+                            $relation->getInverseClass(),
+                            StringUtility::asLowerCamelCase(
+                                StringUtility::getShortClassName($relation->getOwningClass())
+                            )
+                        )
+                    );
+                }
+
+                break;
+            default:
+                throw new \InvalidArgumentException('Invalid type: ' . $type);
+        }
+
+        return $relation;
+    }
+
+    private function createEntityClassQuestion(string $questionText): Question
+    {
+        $question = new Question($questionText);
+        $question->setValidator([ClassValidator::class, 'notBlank']);
+        $package = PackageUtility::getPackage($this->package->getName());
+        $choices = PackageUtility::getPackageClassesByNamespace($package, self::MODEL_NAME_SPACE);
+        $question->setAutocompleterValues($choices);
+
+        return $question;
+    }
+
+    private function askRelationType(SymfonyStyle $io, string $entityClass, string $targetEntityClass)
+    {
+        $io->writeln('What type of relationship is this?');
+
+        $originalEntityShort = StringUtility::getShortClassName($entityClass);
+        $targetEntityShort = StringUtility::getShortClassName($targetEntityClass);
+        $rows = [];
+        $rows[] = [
+            EntityRelation::MANY_TO_ONE,
+            sprintf(
+                "Each <comment>%s</comment> relates to (has) <info>one</info> <comment>%s</comment>.\nEach <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment> objects.",
+                $originalEntityShort,
+                $targetEntityShort,
+                $targetEntityShort,
+                $originalEntityShort
+            ),
+        ];
+        $rows[] = ['', ''];
+        $rows[] = [
+            EntityRelation::ONE_TO_MANY,
+            sprintf(
+                "Each <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment> objects.\nEach <comment>%s</comment> relates to (has) <info>one</info> <comment>%s</comment>.",
+                $originalEntityShort,
+                $targetEntityShort,
+                $targetEntityShort,
+                $originalEntityShort
+            ),
+        ];
+        $rows[] = ['', ''];
+        $rows[] = [
+            EntityRelation::MANY_TO_MANY,
+            sprintf(
+                "Each <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment> objects.\nEach <comment>%s</comment> can also relate to (can also have) <info>many</info> <comment>%s</comment> objects.",
+                $originalEntityShort,
+                $targetEntityShort,
+                $targetEntityShort,
+                $originalEntityShort
+            ),
+        ];
+        $rows[] = ['', ''];
+        $rows[] = [
+            EntityRelation::ONE_TO_ONE,
+            sprintf(
+                "Each <comment>%s</comment> relates to (has) exactly <info>one</info> <comment>%s</comment>.\nEach <comment>%s</comment> also relates to (has) exactly <info>one</info> <comment>%s</comment>.",
+                $originalEntityShort,
+                $targetEntityShort,
+                $targetEntityShort,
+                $originalEntityShort
+            ),
+        ];
+
+        $io->table(
+            [
+                'Type',
+                'Description',
+            ],
+            $rows
+        );
+
+        $question = new Question(
+            sprintf(
+                'Relation type? [%s]',
+                implode(', ', EntityRelation::getValidRelationTypes())
+            )
+        );
+        $question->setAutocompleterValues(EntityRelation::getValidRelationTypes());
+        $question->setValidator(
+            function ($type) {
+                if (!\in_array($type, EntityRelation::getValidRelationTypes())) {
+                    throw new \InvalidArgumentException(
+                        sprintf('Invalid type: use one of: %s', implode(', ', EntityRelation::getValidRelationTypes()))
+                    );
+                }
+
+                return $type;
+            }
+        );
+
+        return $io->askQuestion($question);
+    }
+
+    private function isClassInVendor(string $class): bool
+    {
+        $path = $this->getPathOfClass($class);
+
+        return $this->fileManager->isPathInVendor($path);
     }
 }

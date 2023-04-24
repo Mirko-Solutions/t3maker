@@ -164,4 +164,12 @@ class FileManager
     {
         return str_replace('\\', '/', $path);
     }
+
+    public function isPathInVendor(string $path): bool
+    {
+        return str_starts_with(
+            $this->normalizeSlashes($path),
+            $this->normalizeSlashes($this->rootDirectory.'/vendor/')
+        );
+    }
 }
