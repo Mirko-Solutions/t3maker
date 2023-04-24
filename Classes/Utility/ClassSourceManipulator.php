@@ -141,52 +141,6 @@ final class ClassSourceManipulator
         }
     }
 
-    public function addEmbeddedEntity(string $propertyName, string $className): void
-    {
-        $typeHint = $this->addUseStatementIfNecessary($className);
-
-        $attributes = [
-            //TODO replace with T3 style
-//            $this->buildAttributeNode(
-//                Embedded::class,
-//                ['class' => new ClassNameValue($className, $typeHint)],
-//                'ORM'
-//            ),
-        ];
-
-        $this->addProperty(
-            name: $propertyName,
-            attributes: $attributes,
-            propertyType: $typeHint,
-        );
-
-        // logic to avoid re-adding the same ArrayCollection line
-        $addEmbedded = true;
-        if ($this->getConstructorNode()) {
-            // We print the constructor to a string, then
-            // look for "$this->propertyName = "
-
-            $constructorString = $this->printer->prettyPrint([$this->getConstructorNode()]);
-            if (false !== strpos($constructorString, sprintf('$this->%s = ', $propertyName))) {
-                $addEmbedded = false;
-            }
-        }
-
-        if ($addEmbedded) {
-            $this->addStatementToConstructor(
-                new Node\Stmt\Expression(
-                    new Node\Expr\Assign(
-                        new Node\Expr\PropertyFetch(new Node\Expr\Variable('this'), $propertyName),
-                        new Node\Expr\New_(new Node\Name($typeHint))
-                    )
-                )
-            );
-        }
-
-        $this->addGetter($propertyName, $typeHint, false);
-        $this->addSetter($propertyName, $typeHint, false);
-    }
-
     public function addManyToOneRelation(RelationManyToOne $manyToOne): void
     {
         $this->addSingularRelation($manyToOne);
@@ -205,73 +159,6 @@ final class ClassSourceManipulator
     public function addManyToManyRelation(RelationManyToMany $manyToMany): void
     {
         $this->addCollectionRelation($manyToMany);
-    }
-
-    public function addInterface(string $interfaceName): void
-    {
-        $this->addUseStatementIfNecessary($interfaceName);
-
-        $this->getClassNode()->implements[] = new Node\Name(Str::getShortClassName($interfaceName));
-        $this->updateSourceCodeFromNewStmts();
-    }
-
-    /**
-     * @param string $trait the fully-qualified trait name
-     */
-    public function addTrait(string $trait): void
-    {
-        $importedClassName = $this->addUseStatementIfNecessary($trait);
-
-        /** @var Node\Stmt\TraitUse[] $traitNodes */
-        $traitNodes = $this->findAllNodes(
-            function ($node) {
-                return $node instanceof Node\Stmt\TraitUse;
-            }
-        );
-
-        foreach ($traitNodes as $node) {
-            if ($node->traits[0]->toString() === $importedClassName) {
-                return;
-            }
-        }
-
-        $traitNodes[] = new Node\Stmt\TraitUse([new Node\Name($importedClassName)]);
-
-        $classNode = $this->getClassNode();
-
-        if (!empty($classNode->stmts) && 1 === \count($traitNodes)) {
-            $traitNodes[] = $this->createBlankLineNode(self::CONTEXT_CLASS);
-        }
-
-        // avoid all the use traits in class for unshift all the new UseTrait
-        // in the right order.
-        foreach ($classNode->stmts as $key => $node) {
-            if ($node instanceof Node\Stmt\TraitUse) {
-                unset($classNode->stmts[$key]);
-            }
-        }
-
-        array_unshift($classNode->stmts, ...$traitNodes);
-
-        $this->updateSourceCodeFromNewStmts();
-    }
-
-    public function addAccessorMethod(
-        string $propertyName,
-        string $methodName,
-        $returnType,
-        bool $isReturnTypeNullable,
-        array $commentLines = [],
-        $typeCast = null
-    ): void {
-        $this->addCustomGetter(
-            $propertyName,
-            $methodName,
-            $returnType,
-            $isReturnTypeNullable,
-            $commentLines,
-            $typeCast
-        );
     }
 
     public function addGetter(
@@ -295,80 +182,8 @@ final class ClassSourceManipulator
                 )
             )
         );
-        $this->makeMethodFluent($builder);
+        $this->makeMethodVoid($builder);
         $this->addMethod($builder->getNode());
-    }
-
-    /**
-     * @param Node[] $params
-     */
-    public function addConstructor(array $params, string $methodBody): void
-    {
-        if (null !== $this->getConstructorNode()) {
-            throw new \LogicException('Constructor already exists.');
-        }
-
-        $methodBuilder = $this->createMethodBuilder('__construct', null, false);
-
-        $this->addMethodParams($methodBuilder, $params);
-
-        $this->addMethodBody($methodBuilder, $methodBody);
-
-        $this->addNodeAfterProperties($methodBuilder->getNode());
-        $this->updateSourceCodeFromNewStmts();
-    }
-
-    /**
-     * @param Node[] $params
-     */
-    public function addMethodBuilder(Builder\Method $methodBuilder, array $params = [], string $methodBody = null): void
-    {
-        $this->addMethodParams($methodBuilder, $params);
-
-        if ($methodBody) {
-            $this->addMethodBody($methodBuilder, $methodBody);
-        }
-
-        $this->addMethod($methodBuilder->getNode());
-    }
-
-    public function addMethodBody(Builder\Method $methodBuilder, string $methodBody): void
-    {
-        $nodes = $this->parser->parse($methodBody);
-        $methodBuilder->addStmts($nodes);
-    }
-
-    public function createMethodBuilder(
-        string $methodName,
-        $returnType,
-        bool $isReturnTypeNullable,
-        array $commentLines = []
-    ): Builder\Method {
-        $methodNodeBuilder = (new Builder\Method($methodName))
-            ->makePublic();
-
-        if (null !== $returnType) {
-            if (class_exists($returnType) || interface_exists($returnType)) {
-                $returnType = $this->addUseStatementIfNecessary($returnType);
-            }
-            $methodNodeBuilder->setReturnType($isReturnTypeNullable ? new Node\NullableType($returnType) : $returnType);
-        }
-
-        if ($commentLines) {
-            $methodNodeBuilder->setDocComment($this->createDocBlock($commentLines));
-        }
-
-        return $methodNodeBuilder;
-    }
-
-    public function createMethodLevelCommentNode(string $comment)
-    {
-        return $this->createSingleLineCommentNode($comment, self::CONTEXT_CLASS_METHOD);
-    }
-
-    public function createMethodLevelBlankLine()
-    {
-        return $this->createBlankLineNode(self::CONTEXT_CLASS_METHOD);
     }
 
     /**
@@ -408,17 +223,6 @@ final class ClassSourceManipulator
         $newPropertyNode = $newPropertyBuilder->getNode();
 
         $this->addNodeAfterProperties($newPropertyNode);
-    }
-
-    public function addAttributeToClass(string $attributeClass, array $options): void
-    {
-        $this->addUseStatementIfNecessary($attributeClass);
-
-        $classNode = $this->getClassNode();
-
-        $classNode->attrGroups[] = new Node\AttributeGroup([$this->buildAttributeNode($attributeClass, $options)]);
-
-        $this->updateSourceCodeFromNewStmts();
     }
 
     private function addCustomGetter(
@@ -488,43 +292,9 @@ final class ClassSourceManipulator
             $typeHint = 'self';
         }
 
-        $annotationOptions = [];
-        if ($relation->isOwning()) {
-            // sometimes, we don't map the inverse relation
-            if ($relation->getMapInverseRelation()) {
-                $annotationOptions['inversedBy'] = $relation->getTargetPropertyName();
-            }
-        } else {
-            $annotationOptions['mappedBy'] = $relation->getTargetPropertyName();
-        }
-
-        if ('self' === $typeHint) {
-            // Doctrine does not currently resolve "self" correctly for targetEntity guessing
-            $annotationOptions['targetEntity'] = new ClassNameValue($typeHint, $relation->getTargetClassName());
-        }
-
-        if ($relation instanceof RelationOneToOne) {
-            $annotationOptions['cascade'] = ['persist', 'remove'];
-        }
-
-        $attributes = [
-            //TODO replace with T3 style
-//            $this->buildAttributeNode(
-//                $relation instanceof RelationManyToOne ? ManyToOne::class : OneToOne::class,
-//                $annotationOptions,
-//                'ORM'
-//            ),
-        ];
-
-        if (!$relation->isNullable() && $relation->isOwning()) {
-            //TODO replace with T3 style
-//            $attributes[] = $this->buildAttributeNode(JoinColumn::class, ['nullable' => false], 'ORM');
-        }
-
         $this->addProperty(
             name: $relation->getPropertyName(),
             defaultValue: null,
-            attributes: $attributes,
             propertyType: '?' . $typeHint,
         );
 
@@ -566,7 +336,7 @@ final class ClassSourceManipulator
                 )
             )
         );
-        $this->makeMethodFluent($setterNodeBuilder);
+        $this->makeMethodVoid($setterNodeBuilder);
         $this->addMethod($setterNodeBuilder->getNode());
     }
 
@@ -579,34 +349,8 @@ final class ClassSourceManipulator
         $arrayCollectionTypeHint = $this->addUseStatementIfNecessary(ObjectStorage::class);
         $collectionTypeHint = $this->addUseStatementIfNecessary(ObjectStorage::class);
 
-        $annotationOptions = [
-            'targetEntity' => new ClassNameValue($typeHint, $relation->getTargetClassName()),
-        ];
-        if ($relation->isOwning()) {
-            // sometimes, we don't map the inverse relation
-            if ($relation->getMapInverseRelation()) {
-                $annotationOptions['inversedBy'] = $relation->getTargetPropertyName();
-            }
-        } else {
-            $annotationOptions['mappedBy'] = $relation->getTargetPropertyName();
-        }
-
-        if ($relation->getOrphanRemoval()) {
-            $annotationOptions['orphanRemoval'] = true;
-        }
-
-        $attributes = [
-            //TODO replace with T3 style
-//            $this->buildAttributeNode(
-//                $relation instanceof RelationManyToMany ? ManyToMany::class : OneToMany::class,
-//                $annotationOptions,
-//                'ORM'
-//            ),
-        ];
-
         $this->addProperty(
             name: $relation->getPropertyName(),
-            attributes: $attributes,
             propertyType: $collectionTypeHint,
         );
 
@@ -615,7 +359,6 @@ final class ClassSourceManipulator
         if ($this->getConstructorNode()) {
             // We print the constructor to a string, then
             // look for "$this->propertyName = "
-
             $constructorString = $this->printer->prettyPrint([$this->getConstructorNode()]);
             if (str_contains($constructorString, sprintf('$this->%s = ', $relation->getPropertyName()))) {
                 $addArrayCollection = false;
@@ -638,10 +381,15 @@ final class ClassSourceManipulator
             $collectionTypeHint,
             false,
             // add @return that advertises this as a collection of specific objects
-            [sprintf('@return %s<int, %s>', $collectionTypeHint, $typeHint)]
+            [sprintf('@return %s<%s>', $collectionTypeHint, $typeHint)]
         );
 
-        $argName = Str::pluralCamelCaseToSingular($relation->getPropertyName());
+        $this->addSetter(
+            $relation->getPropertyName(),
+            $collectionTypeHint,
+            false,
+            [sprintf('@param %s<%s> $%s', $collectionTypeHint, $typeHint, $relation->getPropertyName())]
+        );
     }
 
     private function addStatementToConstructor(Node\Stmt $stmt): void
@@ -702,7 +450,7 @@ final class ClassSourceManipulator
             if ($stmt instanceof Node\Stmt\Use_) {
                 // I believe this is an array to account for use statements with {}
                 foreach ($stmt->uses as $use) {
-                    $alias = $use->alias ? $use->alias->name : $use->name->getLast();
+                    $alias = $use->alias->name ?? $use->name->getLast();
 
                     // the use statement already exists? Don't add it again
                     if ($class === (string)$use->name) {
@@ -918,19 +666,6 @@ final class ClassSourceManipulator
         return false === $node ? null : $node;
     }
 
-    /**
-     * @return Node[]
-     */
-    private function findAllNodes(callable $filterCallback): array
-    {
-        $traverser = new NodeTraverser();
-        $visitor = new NodeVisitor\FindingVisitor($filterCallback);
-        $traverser->addVisitor($visitor);
-        $traverser->traverse($this->newStmts);
-
-        return $visitor->getFoundNodes();
-    }
-
     private function createBlankLineNode(string $context): Node\Stmt\Use_|Node|Node\Stmt\Property|Node\Expr\Variable
     {
         return match ($context) {
@@ -1031,12 +766,9 @@ final class ClassSourceManipulator
         $this->updateSourceCodeFromNewStmts();
     }
 
-    private function makeMethodFluent(Builder\Method $methodBuilder): void
+    private function makeMethodVoid(Builder\Method $methodBuilder): void
     {
-        $methodBuilder
-            ->addStmt($this->createBlankLineNode(self::CONTEXT_CLASS_METHOD))
-            ->addStmt(new Node\Stmt\Return_(new Node\Expr\Variable('this')));
-        $methodBuilder->setReturnType('self');
+        $methodBuilder->setReturnType('void');
     }
 
     private function isInSameNamespace(string $class): bool
@@ -1130,7 +862,6 @@ final class ClassSourceManipulator
                 )
             );
 
-            // if ($user->getUserProfile() !== $this) {
             $ifNode = new Node\Stmt\If_(
                 new Node\Expr\BinaryOp\NotIdentical(
                     new Node\Expr\MethodCall(
@@ -1141,7 +872,6 @@ final class ClassSourceManipulator
                 )
             );
 
-            // $user->setUserProfile($this);
             $ifNode->stmts = [
                 new Node\Stmt\Expression(
                     new Node\Expr\MethodCall(
@@ -1165,7 +895,6 @@ final class ClassSourceManipulator
             )
         );
 
-        // if ($user !== null && $user->getUserProfile() !== $this)
         $ifNode = new Node\Stmt\If_(
             new Node\Expr\BinaryOp\BooleanAnd(
                 new Node\Expr\BinaryOp\Identical(
@@ -1182,7 +911,6 @@ final class ClassSourceManipulator
             )
         );
         $ifNode->stmts = [
-            // $this->user->setUserProfile(null)
             new Node\Stmt\Expression(
                 new Node\Expr\MethodCall(
                     new Node\Expr\PropertyFetch(
@@ -1204,7 +932,6 @@ final class ClassSourceManipulator
             )
         );
 
-        // if ($user === null && $this->user !== null)
         $ifNode = new Node\Stmt\If_(
             new Node\Expr\BinaryOp\BooleanAnd(
                 new Node\Expr\BinaryOp\NotIdentical(
@@ -1267,13 +994,6 @@ final class ClassSourceManipulator
     {
         if (null !== $this->io) {
             $this->io->text($note);
-        }
-    }
-
-    private function addMethodParams(Builder\Method $methodBuilder, array $params): void
-    {
-        foreach ($params as $param) {
-            $methodBuilder->addParam($param);
         }
     }
 
