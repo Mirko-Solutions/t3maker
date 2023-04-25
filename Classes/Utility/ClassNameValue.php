@@ -11,8 +11,6 @@
 
 namespace Mirko\T3maker\Utility;
 
-use Symfony\Bundle\MakerBundle\Str;
-
 /**
  * @internal
  */
@@ -27,7 +25,7 @@ final class ClassNameValue implements \Stringable
     public function getShortName(): string
     {
         if ($this->isSelf()) {
-            return Str::getShortClassName($this->fullClassName);
+            return StringUtility::getShortClassName($this->fullClassName);
         }
 
         return $this->typeHint;

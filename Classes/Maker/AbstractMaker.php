@@ -6,7 +6,6 @@ namespace Mirko\T3maker\Maker;
 
 use Mirko\T3maker\Utility\PackageDetails;
 use Mirko\T3maker\Validator\ClassValidator;
-use Symfony\Bundle\MakerBundle\Util\ClassDetails;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
@@ -77,6 +76,6 @@ abstract class AbstractMaker implements MakerInterface
 
     protected function getPathOfClass(string $class): string
     {
-        return (new ClassDetails($class))->getPath();
+        return (new \ReflectionClass($class))->getFileName();
     }
 }

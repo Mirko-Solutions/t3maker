@@ -3,15 +3,7 @@
 namespace Mirko\T3maker\Utility;
 
 use Mirko\T3maker\Validator\ClassValidator;
-use Symfony\Bundle\MakerBundle\Exception\RuntimeCommandException;
-use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @author Javier Eguiluz <javier.eguiluz@gmail.com>
- * @author Ryan Weaver <weaverryan@gmail.com>
- *
- * @internal
- */
 final class Validator
 {
     public static function validateClassName(string $className, string $errorMessage = ''): string
@@ -26,7 +18,7 @@ final class Validator
             if (!mb_check_encoding($piece, 'UTF-8')) {
                 $errorMessage = $errorMessage ?: sprintf('"%s" is not a UTF-8-encoded string.', $piece);
 
-                throw new RuntimeCommandException($errorMessage);
+                throw new \RuntimeException($errorMessage);
             }
 
             if (!preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $piece)) {
@@ -35,131 +27,17 @@ final class Validator
                     $className
                 );
 
-                throw new RuntimeCommandException($errorMessage);
+                throw new \RuntimeException($errorMessage);
             }
 
             if (\in_array(strtolower($shortClassName), $reservedKeywords, true)) {
-                throw new RuntimeCommandException(
+                throw new \RuntimeException(
                     sprintf('"%s" is a reserved keyword and thus cannot be used as class name in PHP.', $shortClassName)
                 );
             }
         }
 
         // return original class name
-        return $className;
-    }
-
-    public static function validateLength($length)
-    {
-        if (!$length) {
-            return $length;
-        }
-
-        $result = filter_var(
-            $length,
-            \FILTER_VALIDATE_INT,
-            [
-                'options' => ['min_range' => 1],
-            ]
-        );
-
-        if (false === $result) {
-            throw new RuntimeCommandException(sprintf('Invalid length "%s".', $length));
-        }
-
-        return $result;
-    }
-
-    public static function validatePrecision($precision)
-    {
-        if (!$precision) {
-            return $precision;
-        }
-
-        $result = filter_var(
-            $precision,
-            \FILTER_VALIDATE_INT,
-            [
-                'options' => ['min_range' => 1, 'max_range' => 65],
-            ]
-        );
-
-        if (false === $result) {
-            throw new RuntimeCommandException(sprintf('Invalid precision "%s".', $precision));
-        }
-
-        return $result;
-    }
-
-    public static function validateScale($scale)
-    {
-        if (!$scale) {
-            return $scale;
-        }
-
-        $result = filter_var(
-            $scale,
-            \FILTER_VALIDATE_INT,
-            [
-                'options' => ['min_range' => 0, 'max_range' => 30],
-            ]
-        );
-
-        if (false === $result) {
-            throw new RuntimeCommandException(sprintf('Invalid scale "%s".', $scale));
-        }
-
-        return $result;
-    }
-
-    public static function validateBoolean($value)
-    {
-        if ('yes' === $value) {
-            return true;
-        }
-
-        if ('no' === $value) {
-            return false;
-        }
-
-        if (null === $valueAsBool = filter_var($value, \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE)) {
-            throw new RuntimeCommandException(sprintf('Invalid bool value "%s".', $value));
-        }
-
-        return $valueAsBool;
-    }
-
-    public static function validatePropertyName(string $name): string
-    {
-        // check for valid PHP variable name
-        if (!StringUtility::isValidPhpVariableName($name)) {
-            throw new \InvalidArgumentException(sprintf('"%s" is not a valid PHP property name.', $name));
-        }
-
-        return $name;
-    }
-
-    public static function validateEmailAddress(?string $email): string
-    {
-        if (!filter_var($email, \FILTER_VALIDATE_EMAIL)) {
-            throw new RuntimeCommandException(sprintf('"%s" is not a valid email address.', $email));
-        }
-
-        return $email;
-    }
-
-    public static function existsOrNull(?string $className = null, array $entities = []): ?string
-    {
-        if (null !== $className) {
-            self::validateClassName($className);
-
-            if (str_starts_with($className, '\\')) {
-                self::classExists($className);
-            } else {
-                self::entityExists($className, $entities);
-            }
-        }
-
         return $className;
     }
 
@@ -173,7 +51,7 @@ final class Validator
                 $className
             );
 
-            throw new RuntimeCommandException($errorMessage);
+            throw new \RuntimeException($errorMessage);
         }
 
         return $className;
@@ -184,7 +62,7 @@ final class Validator
         self::notBlank($className);
 
         if (empty($entities)) {
-            throw new RuntimeCommandException(
+            throw new \RuntimeException(
                 'There are no registered entities; please create an entity before using this command.'
             );
         }
@@ -197,7 +75,7 @@ final class Validator
         }
 
         if (!\in_array($className, $entities, true)) {
-            throw new RuntimeCommandException(
+            throw new \RuntimeException(
                 sprintf('Entity "%s" doesn\'t exist; please enter an existing one or create a new one.', $className)
             );
         }
@@ -205,14 +83,12 @@ final class Validator
         return $className;
     }
 
-    public static function classDoesNotExist($className): string
+    public static function notBlank(string $value = null): string
     {
-        self::notBlank($className);
-
-        if (class_exists($className)) {
-            throw new RuntimeCommandException(sprintf('Class "%s" already exists.', $className));
+        if (null === $value || '' === $value) {
+            throw new \RuntimeException('This value cannot be blank.');
         }
 
-        return $className;
+        return $value;
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mirko\T3maker\Validator;
 
 use Mirko\T3maker\Utility\StringUtility;
-use Symfony\Bundle\MakerBundle\Exception\RuntimeCommandException;
 
 final class ClassValidator
 {
@@ -188,7 +187,7 @@ final class ClassValidator
     public static function notBlank(string $value = null): string
     {
         if (null === $value || '' === $value) {
-            throw new RuntimeCommandException('This value cannot be blank.');
+            throw new \RuntimeException('This value cannot be blank.');
         }
 
         return $value;

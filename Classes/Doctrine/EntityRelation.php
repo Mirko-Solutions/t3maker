@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 
 namespace Mirko\T3maker\Doctrine;
-//TODO implement
-use Symfony\Bundle\MakerBundle\Doctrine\RelationManyToMany;
-use Symfony\Bundle\MakerBundle\Doctrine\RelationManyToOne;
-use Symfony\Bundle\MakerBundle\Doctrine\RelationOneToMany;
-use Symfony\Bundle\MakerBundle\Doctrine\RelationOneToOne;
 
 /**
  * @internal
@@ -176,7 +171,9 @@ final class EntityRelation
     public function setMapInverseRelation(bool $mapInverseRelation): void
     {
         if ($mapInverseRelation && $this->inverseProperty) {
-            throw new \Exception('Cannot set setMapInverseRelation() to true when the inverse relation property is set.');
+            throw new \RuntimeException(
+                'Cannot set setMapInverseRelation() to true when the inverse relation property is set.'
+            );
         }
 
         $this->mapInverseRelation = $mapInverseRelation;

@@ -11,24 +11,23 @@
 
 namespace Mirko\T3maker\Utility;
 
-use Doctrine\DBAL\Types\Types;
-use PhpParser\Builder;
-use PhpParser\BuilderHelpers;
-use PhpParser\Lexer;
 use PhpParser\Node;
-use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitor;
+use PhpParser\Lexer;
 use PhpParser\Parser;
-use Symfony\Bundle\MakerBundle\Doctrine\BaseCollectionRelation;
-use Symfony\Bundle\MakerBundle\Doctrine\BaseRelation;
-use Symfony\Bundle\MakerBundle\Doctrine\DoctrineHelper;
-use Symfony\Bundle\MakerBundle\Doctrine\RelationManyToMany;
-use Symfony\Bundle\MakerBundle\Doctrine\RelationManyToOne;
-use Symfony\Bundle\MakerBundle\Doctrine\RelationOneToMany;
-use Symfony\Bundle\MakerBundle\Doctrine\RelationOneToOne;
-use Symfony\Bundle\MakerBundle\Str;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use PhpParser\Builder;
+use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
+use PhpParser\BuilderHelpers;
+use Doctrine\DBAL\Types\Types;
+use Mirko\T3maker\Doctrine\BaseRelation;
+use Mirko\T3maker\Doctrine\DoctrineHelper;
+use Mirko\T3maker\Doctrine\RelationOneToOne;
+use Mirko\T3maker\Doctrine\RelationManyToOne;
+use Mirko\T3maker\Doctrine\RelationOneToMany;
+use Mirko\T3maker\Doctrine\RelationManyToMany;
 use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
+use Symfony\Component\Console\Style\SymfonyStyle;
+use Mirko\T3maker\Doctrine\BaseCollectionRelation;
 
 /**
  * @internal
@@ -167,7 +166,7 @@ final class ClassSourceManipulator
         bool $isReturnTypeNullable,
         array $commentLines = []
     ): void {
-        $methodName = ('bool' === $returnType ? 'is' : 'get') . Str::asCamelCase($propertyName);
+        $methodName = ('bool' === $returnType ? 'is' : 'get') . StringUtility::asCamelCase($propertyName);
         $this->addCustomGetter($propertyName, $methodName, $returnType, $isReturnTypeNullable, $commentLines);
     }
 
@@ -269,7 +268,7 @@ final class ClassSourceManipulator
         bool $isNullable,
         array $commentLines = []
     ): Builder\Method {
-        $methodName = 'set' . Str::asCamelCase($propertyName);
+        $methodName = 'set' . StringUtility::asCamelCase($propertyName);
         $setterNodeBuilder = (new Builder\Method($methodName))->makePublic();
 
         if ($commentLines) {
@@ -436,7 +435,7 @@ final class ClassSourceManipulator
      */
     public function addUseStatementIfNecessary(string $class): string
     {
-        $shortClassName = Str::getShortClassName($class);
+        $shortClassName = StringUtility::getShortClassName($class);
         if ($this->isInSameNamespace($class)) {
             return $shortClassName;
         }
@@ -467,7 +466,10 @@ final class ClassSourceManipulator
 
                 // if $class is alphabetically before this use statement, place it before
                 // only set $targetIndex the first time you find it
-                if (null === $targetIndex && Str::areClassesAlphabetical($class, (string)$stmt->uses[0]->name)) {
+                if (null === $targetIndex && StringUtility::areClassesAlphabetical(
+                        $class,
+                        (string)$stmt->uses[0]->name
+                    )) {
                     $targetIndex = $index;
                 }
 
@@ -556,8 +558,8 @@ final class ClassSourceManipulator
         $class = $attributePrefix ? sprintf(
             '%s\\%s',
             $attributePrefix,
-            Str::getShortClassName($attributeClass)
-        ) : Str::getShortClassName($attributeClass);
+            StringUtility::getShortClassName($attributeClass)
+        ) : StringUtility::getShortClassName($attributeClass);
 
         return new Node\Attribute(
             new Node\Name($class),
@@ -729,7 +731,7 @@ final class ClassSourceManipulator
                 $this->writeNote(
                     sprintf(
                         'Not generating <info>%s::%s()</info>: method already exists',
-                        Str::getShortClassName($this->getThisFullClassName()),
+                        StringUtility::getShortClassName($this->getThisFullClassName()),
                         $methodName
                     )
                 );
