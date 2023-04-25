@@ -54,12 +54,15 @@ class TCAConfigProvider
     {
         $propertyType = $namedType->getName();
         $typeVariants = [];
+        if (class_exists($propertyType)) {
+            $propertyType = 'object';
+        }
+
         foreach ($this->configTypes as $configType) {
             if (in_array($propertyType, $configType::getPossiblePropertyTypes(), true)) {
                 $typeVariants[] = $configType;
             }
         }
-
         return $typeVariants;
     }
 
@@ -96,8 +99,10 @@ class TCAConfigProvider
      * @param string $renderTypeName
      * @return ConfigRenderTypeInterface|null
      */
-    public function getConfigRenderTypeByName($configRenderTypes, string $renderTypeName): ConfigRenderTypeInterface|null
-    {
+    public function getConfigRenderTypeByName(
+        $configRenderTypes,
+        string $renderTypeName
+    ): ConfigRenderTypeInterface|null {
         foreach ($configRenderTypes as $renderType) {
             if ($renderType::getTypeName() === $renderTypeName) {
                 return $renderType;

@@ -20,7 +20,8 @@
     "doctrine/annotations": "^1.0",
     "symfony/filesystem": "^5.4.7|^6.0",
     "symfony/finder": "^5.4.3|^6.0",
-    "symfony/var-exporter": "^5.4|^6.0"
+    "symfony/var-exporter": "^5.4|^6.0",
+    "symfony/property-info": "*"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

@@ -118,6 +118,10 @@ class TCAColumnFactory
             return null;
         }
 
+        if (count($choices) === 1) {
+            return $this->TCAConfigProvider->getConfigRenderTypeByName($renderTypes, current($choices));
+        }
+
         $question = new ChoiceQuestion(
             "available config render types for config type '{$configType->getTypeName()}', please select one",
             $choices,
