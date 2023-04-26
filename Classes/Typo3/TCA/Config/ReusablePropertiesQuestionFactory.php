@@ -396,7 +396,7 @@ class ReusablePropertiesQuestionFactory
 
         $question->setValidator(
             static function ($value) {
-                if (preg_match('/^\d+$/', $value)) {
+                if (preg_match('/^\d+$/', (string)$value)) {
                     return $value;
                 }
 

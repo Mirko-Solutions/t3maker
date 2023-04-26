@@ -46,7 +46,20 @@ class TCASourceManipulator
 
     public function updateColumnConfig(string $columnName, array $config): void
     {
-        $this->tcaConfiguration['columns'][$columnName]['config'] = $config;
+        if (!array_key_exists('config', $this->tcaConfiguration['columns'][$columnName])) {
+            $this->tcaConfiguration['columns'][$columnName]['config'] = $config;
+            return;
+        }
+
+        if (
+            !array_key_exists('type', $this->tcaConfiguration['columns'][$columnName]['config']) ||
+            $this->tcaConfiguration['columns'][$columnName]['config']['type'] !== $config['type']
+        ) {
+            $this->tcaConfiguration['columns'][$columnName]['config'] = $config;
+            return;
+        }
+
+        $this->recursiveUpdate($this->tcaConfiguration['columns'][$columnName]['config'], $config);
     }
 
     public function getTcaColumns(): array
@@ -61,5 +74,19 @@ class TCASourceManipulator
         }
 
         return false;
+    }
+
+    private function recursiveUpdate(array &$target, array $source): void
+    {
+        foreach ($source as $key => $value) {
+            if (is_array($value)) {
+                if (!isset($target[$key])) {
+                    $target[$key] = array();
+                }
+                $this->recursiveUpdate($target[$key], $value);
+            } else {
+                $target[$key] = $value;
+            }
+        }
     }
 }
