@@ -14,8 +14,8 @@
   ],
   "require": {
     "php": ">=8.0.0",
-    "typo3/cms-core": "^11.5 || 12.*",
-    "typo3/cms-scheduler": "^11.5 || 12.*",
+    "typo3/cms-core": "^11.5",
+    "typo3/cms-scheduler": "^11.5",
     "nikic/php-parser": "^4.11",
     "doctrine/annotations": "^1.0",
     "symfony/filesystem": "^5.4.7|^6.0",

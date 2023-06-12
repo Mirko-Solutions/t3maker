@@ -174,9 +174,7 @@ class ModelMaker extends AbstractMaker
         $this->writeSuccessMessage($io);
         $io->text(
             [
-                'Next: When you\'re ready, create a migration with <info>php bin/console make:migration</info>',
-                '',
-                'Next: When you\'re ready, create a TCA with <info>php bin/console make:tca</info>',
+                'Next: When you\'re ready, create a TCA with <info>php bin/typo3 make:tca</info>',
             ]
         );
 
