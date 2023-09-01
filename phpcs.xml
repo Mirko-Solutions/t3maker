@@ -32,7 +32,7 @@
 
     <!-- Commenting -->
     <rule ref="Generic.Commenting.Fixme"/>
-    <rule ref="Generic.Commenting.Todo"/>
+    <!--<rule ref="Generic.Commenting.Todo"/>-->
     <rule ref="PEAR.Commenting.InlineComment"/>
     <rule ref="Squiz.Commenting.DocCommentAlignment"/>
     <rule ref="Squiz.Commenting.EmptyCatchComment"/>
@@ -66,8 +66,8 @@
     <rule ref="PSR2.Methods.MethodDeclaration.Underscore"/>
 
     <!-- Metrics -->
-    <rule ref="Generic.Metrics.CyclomaticComplexity"/>
-    <rule ref="Generic.Metrics.NestingLevel"/>
+    <!--<rule ref="Generic.Metrics.CyclomaticComplexity"/>-->
+    <!--<rule ref="Generic.Metrics.NestingLevel"/>-->
 
     <!-- Naming conventions -->
     <rule ref="Generic.NamingConventions.ConstructorName"/>

@@ -133,7 +133,8 @@ class ModelMaker extends AbstractMaker
                             $otherManipulator->addManyToOneRelation($newField->getOwningRelation());
                             if (!$newField->getMapInverseRelation()) {
                                 throw new Exception(
-                                    'Somehow a OneToMany relationship is being created, but the inverse side will not be mapped?'
+                                    'Somehow a OneToMany relationship is being created,
+                                    but the inverse side will not be mapped?'
                                 );
                             }
                             $manipulator->addOneToManyRelation($newField->getInverseRelation());
@@ -245,8 +246,8 @@ class ModelMaker extends AbstractMaker
         // try to guess the type by the field name prefix/suffix
         // convert to snake case for simplicity
         $snakeCasedField = StringUtility::asSnakeCase($fieldName);
-
-        if ('_at' === $suffix = substr($snakeCasedField, -3)) {
+        $suffix = substr($snakeCasedField, -3);
+        if ('_at' === $suffix) {
             $defaultType = 'datetime_immutable';
         } elseif ($suffix === '_id') {
             $defaultType = 'integer';
@@ -471,7 +472,8 @@ class ModelMaker extends AbstractMaker
                 [
                     'Do you want to activate <comment>orphanRemoval</comment> on your relationship?',
                     sprintf(
-                        'A <comment>%s</comment> is "orphaned" when it is removed from its related <comment>%s</comment>.',
+                        'A <comment>%s</comment>
+                                is "orphaned" when it is removed from its related <comment>%s</comment>.',
                         StringUtility::getShortClassName($owningClass),
                         StringUtility::getShortClassName($inverseClass)
                     ),
@@ -483,7 +485,8 @@ class ModelMaker extends AbstractMaker
                     ),
                     '',
                     sprintf(
-                        'NOTE: If a <comment>%s</comment> may *change* from one <comment>%s</comment> to another, answer "no".',
+                        'NOTE: If a <comment>%s</comment>
+                                may *change* from one <comment>%s</comment> to another, answer "no".',
                         StringUtility::getShortClassName($owningClass),
                         StringUtility::getShortClassName($inverseClass)
                     ),
@@ -518,7 +521,8 @@ class ModelMaker extends AbstractMaker
             }
             $mapInverse = $io->confirm(
                 sprintf(
-                    'Do you want to add a new property to <comment>%s</comment> so that you can access/update <comment>%s</comment> objects from it - e.g. <comment>$%s->%s()</comment>?',
+                    'Do you want to add a new property to <comment>%s</comment> so that you can access/update
+                            <comment>%s</comment> objects from it - e.g. <comment>$%s->%s()</comment>?',
                     StringUtility::getShortClassName($relation->getInverseClass()),
                     StringUtility::getShortClassName($relation->getOwningClass()),
                     StringUtility::asLowerCamelCase(StringUtility::getShortClassName($relation->getInverseClass())),
@@ -541,7 +545,8 @@ class ModelMaker extends AbstractMaker
 
                 $io->comment(
                     sprintf(
-                        'A new property will also be added to the <comment>%s</comment> class so that you can access and set the related <comment>%s</comment> object from it.',
+                        'A new property will also be added to the <comment>%s</comment> class so that
+                                you can access and set the related <comment>%s</comment> object from it.',
                         StringUtility::getShortClassName($relation->getOwningClass()),
                         StringUtility::getShortClassName($relation->getInverseClass())
                     )
@@ -582,7 +587,8 @@ class ModelMaker extends AbstractMaker
                 if ($relation->getMapInverseRelation()) {
                     $io->comment(
                         sprintf(
-                            'A new property will also be added to the <comment>%s</comment> class so that you can access the related <comment>%s</comment> objects from it.',
+                            'A new property will also be added to the <comment>%s</comment> class so that
+                                    you can access the related <comment>%s</comment> objects from it.',
                             StringUtility::getShortClassName($relation->getInverseClass()),
                             StringUtility::getShortClassName($relation->getOwningClass())
                         )
@@ -617,7 +623,8 @@ class ModelMaker extends AbstractMaker
                 if ($relation->getMapInverseRelation()) {
                     $io->comment(
                         sprintf(
-                            'A new property will also be added to the <comment>%s</comment> class so that you can access the related <comment>%s</comment> object from it.',
+                            'A new property will also be added to the <comment>%s</comment> class so that
+                                    you can access the related <comment>%s</comment> object from it.',
                             StringUtility::getShortClassName($relation->getInverseClass()),
                             StringUtility::getShortClassName($relation->getOwningClass())
                         )
@@ -661,7 +668,8 @@ class ModelMaker extends AbstractMaker
         $rows[] = [
             EntityRelation::MANY_TO_ONE,
             sprintf(
-                "Each <comment>%s</comment> relates to (has) <info>one</info> <comment>%s</comment>.\nEach <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment> objects.",
+                "Each <comment>%s</comment> relates to (has) <info>one</info> <comment>%s</comment>.\n Each
+                       <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment> objects.",
                 $originalEntityShort,
                 $targetEntityShort,
                 $targetEntityShort,
@@ -672,7 +680,8 @@ class ModelMaker extends AbstractMaker
         $rows[] = [
             EntityRelation::ONE_TO_MANY,
             sprintf(
-                "Each <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment> objects.\nEach <comment>%s</comment> relates to (has) <info>one</info> <comment>%s</comment>.",
+                "Each <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment>
+                        objects.\nEach <comment>%s</comment> relates to (has) <info>one</info> <comment>%s</comment>.",
                 $originalEntityShort,
                 $targetEntityShort,
                 $targetEntityShort,
@@ -683,7 +692,9 @@ class ModelMaker extends AbstractMaker
         $rows[] = [
             EntityRelation::MANY_TO_MANY,
             sprintf(
-                "Each <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment> objects.\nEach <comment>%s</comment> can also relate to (can also have) <info>many</info> <comment>%s</comment> objects.",
+                "Each <comment>%s</comment> can relate to (can have) <info>many</info> <comment>%s</comment>
+                        objects.\nEach <comment>%s</comment> can also relate to (can also have) <info>many</info>
+                        <comment>%s</comment> objects.",
                 $originalEntityShort,
                 $targetEntityShort,
                 $targetEntityShort,
@@ -694,7 +705,9 @@ class ModelMaker extends AbstractMaker
         $rows[] = [
             EntityRelation::ONE_TO_ONE,
             sprintf(
-                "Each <comment>%s</comment> relates to (has) exactly <info>one</info> <comment>%s</comment>.\nEach <comment>%s</comment> also relates to (has) exactly <info>one</info> <comment>%s</comment>.",
+                "Each <comment>%s</comment> relates to (has) exactly <info>one</info> <comment>%s</comment>.\n
+                        Each <comment>%s</comment> also relates to (has) exactly <info>one</info>
+                        <comment>%s</comment>.",
                 $originalEntityShort,
                 $targetEntityShort,
                 $targetEntityShort,

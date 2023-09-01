@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Command;
 
-use JetBrains\PhpStorm\NoReturn;
 use Mirko\T3maker\Utility\PackageUtility;
 use Mirko\T3maker\Utility\Typo3Utility;
 use Mirko\T3maker\Validator\ClassValidator;
@@ -27,11 +26,6 @@ final class MakeTCACommand extends AbstractMakeCommand
             )
             ->addOption('overwrite', null, InputOption::VALUE_NONE, 'Overwrite whole TCA file')
             ->setHelp(file_get_contents(Typo3Utility::getExtensionPath('t3maker') . 'Resources/help/MakeTCA.txt'));
-    }
-
-    #[NoReturn] protected function initialize(InputInterface $input, OutputInterface $output): void
-    {
-        parent::initialize($input, $output);
     }
 
     protected function interact(InputInterface $input, OutputInterface $output): void

@@ -72,7 +72,8 @@ class TCAColumnFactory
                     $typeVariants
                 );
             }
-            $message = "available config types for property with builtin type {$propertyTypeNames} please select one";
+            $message = 'available config types for property with builtin type '
+                . $propertyTypeNames . ' please select one';
         }
 
         if (empty($typeVariants)) {
@@ -125,7 +126,7 @@ class TCAColumnFactory
         }
 
         $question = new ChoiceQuestion(
-            "available config render types for config type '{$configType->getTypeName()}', please select one",
+            'available config render types for config type ' . $configType->getTypeName() . ', please select one',
             $choices,
             null
         );

@@ -54,6 +54,6 @@ class TCAGenerator
     private function generateTCAFileName($extKey, $modelName): string
     {
         $modelName = StringUtility::addSuffix(strtolower($modelName), '.php');
-        return "tx_{$extKey}_domain_model_{$modelName}";
+        return 'tx_' . $extKey . '_domain_model_' . $modelName;
     }
 }

@@ -27,6 +27,8 @@ abstract class BaseCollectionRelation extends BaseRelation
 
     public function getRemoverMethodName(): string
     {
-        return 'remove' . StringUtility::asCamelCase(StringUtility::pluralCamelCaseToSingular($this->getPropertyName()));
+        return 'remove' . StringUtility::asCamelCase(
+            StringUtility::pluralCamelCaseToSingular($this->getPropertyName())
+        );
     }
 }

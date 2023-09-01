@@ -62,7 +62,8 @@ abstract class AbstractMakeCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!Typo3Utility::isExtensionLoaded($input->getArgument('extensionName'))) {
-            $this->io->error("Extension key  {$input->getArgument('extensionName')}  is not loaded!");
+            $extensionName = $input->getArgument('extensionName');
+            $this->io->error('Extension key ' . $extensionName . ' is not loaded!');
             return Command::FAILURE;
         }
 

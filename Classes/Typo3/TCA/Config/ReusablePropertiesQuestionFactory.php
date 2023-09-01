@@ -48,6 +48,8 @@ class ReusablePropertiesQuestionFactory
      * @param array        $additionalArg
      *
      * @return mixed
+     *
+     * @throws RuntimeException
      */
     public function askQuestionForProperty(string $property, SymfonyStyle $io, array $additionalArg = []): mixed
     {
@@ -55,10 +57,10 @@ class ReusablePropertiesQuestionFactory
 
         $propertyCarmelCase = StringUtility::asCamelCase($property);
 
-        $method = "askQuestionFor{$propertyCarmelCase}Property";
+        $method = 'askQuestionFor' . $propertyCarmelCase . 'Property';
 
         if (!method_exists($this, $method)) {
-            throw new RuntimeException("creation method no found for property {$property}");
+            throw new RuntimeException('creation method no found for property ' . $property);
         }
 
         return $this->{$method}($io, $additionalArg);
@@ -128,7 +130,7 @@ class ReusablePropertiesQuestionFactory
 
                     $values = implode(',', $validation);
                     throw new RuntimeException(
-                        "for selected field needs '{$this->property}' set to either to {$values}"
+                        'for selected field needs ' . $this->property . ' set to either to ' . $values
                     );
                 }
             );
@@ -209,7 +211,7 @@ class ReusablePropertiesQuestionFactory
             }
 
             $itemValue = $io->ask(
-                "Enter value for {$itemKey}",
+                'Enter value for ' . $itemKey,
                 null,
                 fn ($name) => $name
             );

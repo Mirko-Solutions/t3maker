@@ -129,6 +129,8 @@ class FileManager
 
     /**
      * Resolve '../' in paths (like real_path), but for non-existent files.
+     *
+     * @throws Exception
      */
     private function realPath(string $absolutePath): string
     {

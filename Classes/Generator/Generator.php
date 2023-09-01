@@ -29,7 +29,8 @@ final class Generator
         string $suffix = '',
         string $validationErrorMessage = ''
     ): ClassDetails {
-        $this->namespacePrefix = $fullNamespacePrefix = $namespacePrefix;
+        $this->namespacePrefix = $namespacePrefix;
+        $fullNamespacePrefix = $namespacePrefix;
         if ($name[0] === '\\') {
             // class is already "absolute" - leave it alone (but strip opening \)
             $className = substr($name, 1);
@@ -49,19 +50,24 @@ final class Generator
      * @param string $templateName Template name in Resources/skeleton to use
      * @param array  $variables    Array of variables to pass to the template
      *
-     * @throws Exception
+     * @throws LogicException
      *
      * @return string The path where the file will be created
      */
-    public function generateClass(PackageDetails $package, string $className, string $templateName, array $variables = []): string
-    {
+    public function generateClass(
+        PackageDetails $package,
+        string $className,
+        string $templateName,
+        array $variables = []
+    ): string {
         $this->fileManager->setRootDirectory(Typo3Utility::getExtensionPath($package->getName()));
         $targetPath = $this->fileManager->getRelativePathForFutureClass($package, $className);
 
         if ($targetPath === null) {
             throw new LogicException(
                 sprintf(
-                    'Could not determine where to locate the new class "%s", maybe try with a full namespace like "\\My\\Full\\Namespace\\%s"',
+                    'Could not determine where to locate the new class "%s",
+                    maybe try with a full namespace like "\\My\\Full\\Namespace\\%s"',
                     $className,
                     StringUtility::getShortClassName($className)
                 )

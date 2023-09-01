@@ -26,7 +26,8 @@ final class Validator
 
             if (!preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $piece)) {
                 $errorMessage = $errorMessage ?: sprintf(
-                    '"%s" is not valid as a PHP class name (it must start with a letter or underscore, followed by any number of letters, numbers, or underscores)',
+                    '"%s" is not valid as a PHP class name (it must start with a letter or underscore,
+                    followed by any number of letters, numbers, or underscores)',
                     $className
                 );
 

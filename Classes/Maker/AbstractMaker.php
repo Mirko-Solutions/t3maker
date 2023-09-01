@@ -31,8 +31,8 @@ abstract class AbstractMaker implements MakerInterface
         if (count($package->getComposerNamespaces()) === 1) {
             $namespace = array_key_first($package->getComposerNamespaces());
 
-            $io->writeln("`{$namespace}` namespace will be used");
-            //TODO logic when answer is false
+            $io->writeln('`' . $namespace . '` namespace will be used');
+            // TODO: Logic when answer is false.
             $package->setNamespace($namespace);
             return;
         }

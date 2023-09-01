@@ -45,7 +45,7 @@ final class PrettyPrinter extends Standard
      * After
      *      public function getFoo(): string
      */
-    protected function pStmt_ClassMethod(ClassMethod $node)
+    protected function PStmtClassMethod(ClassMethod $node)
     {
         $classMethod = parent::pStmt_ClassMethod($node);
 

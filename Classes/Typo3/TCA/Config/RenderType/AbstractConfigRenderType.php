@@ -43,7 +43,7 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
 
     /**
      * @param SymfonyStyle $io
-     * @param array        $propertiesConfig
+     * @param array $propertiesConfig
      *
      * @return array
      */
@@ -59,7 +59,8 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
             throw new InvalidArgumentException(sprintf('Value "%s" is invalid', $value));
         };
 
-        $normalizer = static fn ($value) => array_key_exists($value, $propertiesList) ? $propertiesList[$value] : $value;
+        $normalizer = static fn($value) => array_key_exists($value, $propertiesList)
+            ? $propertiesList[$value] : $value;
 
         while (!empty($propertiesList)) {
             $question = new ChoiceQuestion(
@@ -86,7 +87,7 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
 
     /**
      * @param SymfonyStyle $io
-     * @param array        $propertiesList
+     * @param array $propertiesList
      *
      * @return array
      */

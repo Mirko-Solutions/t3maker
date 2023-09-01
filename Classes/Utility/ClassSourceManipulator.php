@@ -411,7 +411,6 @@ final class ClassSourceManipulator
                         new Node\Expr\StaticCall(new Node\Name('parent'), new Node\Identifier('__construct'))
                     );
                 }
-            } catch (ReflectionException $e) {
             }
 
             $this->addNodeAfterProperties($constructorNode);
@@ -438,6 +437,7 @@ final class ClassSourceManipulator
 
     /**
      * @return string The alias to use when referencing this class
+     * @throws Exception
      */
     public function addUseStatementIfNecessary(string $class): string
     {
@@ -472,10 +472,10 @@ final class ClassSourceManipulator
 
                 // if $class is alphabetically before this use statement, place it before
                 // only set $targetIndex the first time you find it
-                if ($targetIndex === null && StringUtility::areClassesAlphabetical(
-                    $class,
-                    (string)$stmt->uses[0]->name
-                )) {
+                if (
+                    $targetIndex === null
+                    && StringUtility::areClassesAlphabetical($class, (string)$stmt->uses[0]->name)
+                ) {
                     $targetIndex = $index;
                 }
 
@@ -520,9 +520,10 @@ final class ClassSourceManipulator
     /**
      * Builds a PHPParser attribute node.
      *
-     * @param string  $attributeClass  The attribute class which should be used for the attribute E.g. #[Column()]
-     * @param array   $options         The named arguments for the attribute ($key = argument name, $value = argument value)
+     * @param string $attributeClass The attribute class which should be used for the attribute E.g. #[Column()]
+     * @param array $options The named arguments for the attribute ($key = argument name, $value = argument value)
      * @param ?string $attributePrefix If a prefix is provided, the node is built using the prefix. E.g. #[ORM\Column()]
+     * @throws Exception
      */
     public function buildAttributeNode(
         string $attributeClass,
@@ -708,7 +709,7 @@ final class ClassSourceManipulator
         $docBlock = "/**\n";
         foreach ($commentLines as $commentLine) {
             if ($commentLine) {
-                $docBlock .= " * $commentLine\n";
+                $docBlock .= ' * ' . $commentLine . "\n";
             } else {
                 // avoid the empty, extra space on blank lines
                 $docBlock .= " *\n";
@@ -963,9 +964,10 @@ final class ClassSourceManipulator
     private function getMethodIndex(string $methodName)
     {
         foreach ($this->getClassNode()->stmts as $i => $node) {
-            if ($node instanceof Node\Stmt\ClassMethod && strtolower($node->name->toString()) === strtolower(
-                $methodName
-            )) {
+            if (
+                $node instanceof Node\Stmt\ClassMethod && strtolower($node->name->toString())
+                === strtolower($methodName)
+            ) {
                 return $i;
             }
         }

@@ -39,6 +39,8 @@ final class ClassValidator
      * @param string $errorMessage
      *
      * @return string
+     *
+     * @throws RuntimeException
      */
     public static function validateClassName(string $className, string $errorMessage = ''): string
     {
@@ -55,7 +57,8 @@ final class ClassValidator
 
             if (!preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $piece)) {
                 $errorMessage = $errorMessage ?: sprintf(
-                    '"%s" is not valid as a PHP class name (it must start with a letter or underscore, followed by any number of letters, numbers, or underscores)',
+                    '"%s" is not valid as a PHP class name (it must start with a letter or underscore,
+                    followed by any number of letters, numbers, or underscores)',
                     $className
                 );
 
@@ -178,8 +181,8 @@ final class ClassValidator
         if ($value == 'no') {
             return false;
         }
-
-        if (null === $valueAsBool = filter_var($value, \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE)) {
+        $valueAsBool = filter_var($value, \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE)
+        if (null === $valueAsBool) {
             throw new RuntimeException(sprintf('Invalid bool value "%s".', $value));
         }
 
