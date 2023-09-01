@@ -30,7 +30,6 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor;
 use PhpParser\Parser;
 use ReflectionClass;
-use ReflectionException;
 use ReflectionParameter;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
@@ -436,8 +435,9 @@ final class ClassSourceManipulator
     }
 
     /**
-     * @return string The alias to use when referencing this class
      * @throws Exception
+     *
+     * @return string The alias to use when referencing this class
      */
     public function addUseStatementIfNecessary(string $class): string
     {
@@ -520,9 +520,10 @@ final class ClassSourceManipulator
     /**
      * Builds a PHPParser attribute node.
      *
-     * @param string $attributeClass The attribute class which should be used for the attribute E.g. #[Column()]
-     * @param array $options The named arguments for the attribute ($key = argument name, $value = argument value)
+     * @param string  $attributeClass  The attribute class which should be used for the attribute E.g. #[Column()]
+     * @param array   $options         The named arguments for the attribute ($key = name, $value = value)
      * @param ?string $attributePrefix If a prefix is provided, the node is built using the prefix. E.g. #[ORM\Column()]
+     *
      * @throws Exception
      */
     public function buildAttributeNode(

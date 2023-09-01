@@ -38,9 +38,9 @@ final class ClassValidator
      * @param string $className
      * @param string $errorMessage
      *
-     * @return string
-     *
      * @throws RuntimeException
+     *
+     * @return string
      */
     public static function validateClassName(string $className, string $errorMessage = ''): string
     {
@@ -181,8 +181,8 @@ final class ClassValidator
         if ($value == 'no') {
             return false;
         }
-        $valueAsBool = filter_var($value, \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE)
-        if (null === $valueAsBool) {
+        $valueAsBool = filter_var($value, \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE);
+        if ($valueAsBool === null) {
             throw new RuntimeException(sprintf('Invalid bool value "%s".', $value));
         }
 

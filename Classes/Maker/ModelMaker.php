@@ -247,7 +247,7 @@ class ModelMaker extends AbstractMaker
         // convert to snake case for simplicity
         $snakeCasedField = StringUtility::asSnakeCase($fieldName);
         $suffix = substr($snakeCasedField, -3);
-        if ('_at' === $suffix) {
+        if ($suffix === '_at') {
             $defaultType = 'datetime_immutable';
         } elseif ($suffix === '_id') {
             $defaultType = 'integer';

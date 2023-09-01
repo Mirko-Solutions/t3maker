@@ -47,9 +47,9 @@ class ReusablePropertiesQuestionFactory
      * @param SymfonyStyle $io
      * @param array        $additionalArg
      *
-     * @return mixed
-     *
      * @throws RuntimeException
+     *
+     * @return mixed
      */
     public function askQuestionForProperty(string $property, SymfonyStyle $io, array $additionalArg = []): mixed
     {
