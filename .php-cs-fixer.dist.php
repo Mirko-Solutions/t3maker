@@ -7,9 +7,9 @@ use TYPO3\CodingStandards\CsFixerConfig;
 $config = CsFixerConfig::create();
 $rules = $config->getRules();
 
-// Removing outdated rules and establishing alternative ones
+// Removing deprecated rules and establishing alternative ones
 unset($rules['braces'], $rules['function_typehint_space']);
-$config->addRules([
+$rules += [
     '@PER:risky' => true,
     '@PHP81Migration' => true,
     'control_structure_braces' => true,
@@ -60,6 +60,7 @@ $config->addRules([
     'single_space_around_construct' => true,
     'statement_indentation' => true,
     'type_declaration_spaces' => true,
-]);
+];
+$config->setRules($rules);
 $config->getFinder()->in('Classes')->in('Configuration');
 return $config;
