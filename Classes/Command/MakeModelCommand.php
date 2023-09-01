@@ -38,7 +38,6 @@ final class MakeModelCommand extends AbstractMakeCommand
     #[NoReturn] protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         parent::initialize($input, $output);
-
     }
 
     protected function interact(InputInterface $input, OutputInterface $output): void

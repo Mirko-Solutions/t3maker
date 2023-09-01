@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Typo3\TCA\Config\RenderType\Input;
 
 use Mirko\T3maker\Typo3\TCA\Config\RenderType\AbstractConfigRenderType;
@@ -27,7 +26,7 @@ class InputDateTime extends AbstractConfigRenderType
      */
     protected array $requiredConfigProperties = [
         ReusablePropertiesQuestionFactory::CONFIG_PROPERTY_EVAL => [
-            'date', 'datetime', 'time', 'timesec'
+            'date', 'datetime', 'time', 'timesec',
         ],
     ];
 }

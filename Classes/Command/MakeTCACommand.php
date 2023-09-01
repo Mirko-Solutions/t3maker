@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Command;
 
 use JetBrains\PhpStorm\NoReturn;
@@ -17,7 +16,6 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 
 final class MakeTCACommand extends AbstractMakeCommand
 {
-
     protected function configure(): void
     {
         parent::configure();
@@ -34,7 +32,6 @@ final class MakeTCACommand extends AbstractMakeCommand
     #[NoReturn] protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         parent::initialize($input, $output);
-
     }
 
     protected function interact(InputInterface $input, OutputInterface $output): void

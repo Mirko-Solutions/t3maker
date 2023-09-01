@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Generator;
 
 use Mirko\T3maker\Parser\ModelParser;
@@ -46,9 +45,9 @@ class TCAGenerator
     public function getTcaExtensionFilePath(PackageDetails $package, ReflectionClass $class): string
     {
         return 'Configuration/TCA/' . $this->generateTCAFileName(
-                $package->getName(),
-                $class->getShortName()
-            );
+            $package->getName(),
+            $class->getShortName()
+        );
     }
 
     private function generateTCAFileName($extKey, $modelName): string

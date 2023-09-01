@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Doctrine;
 
 /**

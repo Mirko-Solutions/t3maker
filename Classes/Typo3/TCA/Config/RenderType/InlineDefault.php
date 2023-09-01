@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Typo3\TCA\Config\RenderType;
 
 use Mirko\T3maker\Typo3\TCA\Config\ReusablePropertiesQuestionFactory;
@@ -41,7 +40,7 @@ class InlineDefault extends AbstractConfigRenderType implements DefaultRenderTyp
             StringUtility::asSnakeCase($property->getName()),
             [
                 'appearance' => [
-                    'createNewRelationLinkTitle' => 'LLL:EXT:cms/locallang_ttc.xlf:images.addFileReference'
+                    'createNewRelationLinkTitle' => 'LLL:EXT:cms/locallang_ttc.xlf:images.addFileReference',
                 ],
                 // custom configuration for displaying fields in the overlay/reference table
                 // to use the image overlay palette instead of the basic overlay palette
@@ -50,12 +49,12 @@ class InlineDefault extends AbstractConfigRenderType implements DefaultRenderTyp
                         '0' => [
                             'showitem' => '
                             --palette--;LLL:EXT:lang/locallang_tca.xlf:sys_file_reference.imageoverlayPalette;imageoverlayPalette,
-                            --palette--;;filePalette'
+                            --palette--;;filePalette',
                         ],
                         \TYPO3\CMS\Core\Resource\File::FILETYPE_TEXT => [
                             'showitem' => '
                             --palette--;LLL:EXT:lang/locallang_tca.xlf:sys_file_reference.imageoverlayPalette;imageoverlayPalette,
-                            --palette--;;filePalette'
+                            --palette--;;filePalette',
                         ],
                     ],
                 ],

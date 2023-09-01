@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker;
 
 use Mirko\T3maker\Utility\PackageDetails;
@@ -105,7 +104,7 @@ class FileManager
         }
 
         // support windows drive paths: C:\ or C:/
-        if (1 === strpos($path, ':\\') || 1 === strpos($path, ':/')) {
+        if (strpos($path, ':\\') === 1 || strpos($path, ':/') === 1) {
             return $path;
         }
 
@@ -118,10 +117,10 @@ class FileManager
     public function getRelativePathForFutureClass(PackageDetails $packageDetails, string $className): ?string
     {
         $path = $packageDetails->getComposerNamespaces()[$packageDetails->getNamespace()] . str_replace(
-                '\\',
-                '/',
-                substr($className, \strlen($packageDetails->getNamespace()))
-            ) . '.php';
+            '\\',
+            '/',
+            substr($className, \strlen($packageDetails->getNamespace()))
+        ) . '.php';
 
         return $this->relativizePath($path);
     }
@@ -136,9 +135,9 @@ class FileManager
 
         $absolutePath = $this->normalizeSlashes($absolutePath);
         foreach (explode('/', $absolutePath) as $pathPart) {
-            if ('..' === $pathPart) {
+            if ($pathPart === '..') {
                 // we need to remove the previous entry
-                if (-1 === $currentIndex) {
+                if ($currentIndex === -1) {
                     throw new \Exception(
                         sprintf('Problem making path relative - is the path "%s" absolute?', $absolutePath)
                     );
@@ -169,7 +168,7 @@ class FileManager
     {
         return str_starts_with(
             $this->normalizeSlashes($path),
-            $this->normalizeSlashes($this->rootDirectory.'/vendor/')
+            $this->normalizeSlashes($this->rootDirectory . '/vendor/')
         );
     }
 }

@@ -33,7 +33,7 @@ final class ClassNameValue implements \Stringable
 
     public function isSelf(): bool
     {
-        return 'self' === $this->typeHint;
+        return $this->typeHint === 'self';
     }
 
     public function __toString(): string

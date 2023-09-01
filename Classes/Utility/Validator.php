@@ -85,7 +85,7 @@ final class Validator
 
     public static function notBlank(string $value = null): string
     {
-        if (null === $value || '' === $value) {
+        if ($value === null || $value === '') {
             throw new \RuntimeException('This value cannot be blank.');
         }
 

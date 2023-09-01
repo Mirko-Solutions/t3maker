@@ -27,7 +27,7 @@ final class Generator
         string $validationErrorMessage = ''
     ): ClassDetails {
         $this->namespacePrefix = $fullNamespacePrefix = $namespacePrefix;
-        if ('\\' === $name[0]) {
+        if ($name[0] === '\\') {
             // class is already "absolute" - leave it alone (but strip opening \)
             $className = substr($name, 1);
         } else {
@@ -55,7 +55,7 @@ final class Generator
         $this->fileManager->setRootDirectory(Typo3Utility::getExtensionPath($package->getName()));
         $targetPath = $this->fileManager->getRelativePathForFutureClass($package, $className);
 
-        if (null === $targetPath) {
+        if ($targetPath === null) {
             throw new \LogicException(
                 sprintf(
                     'Could not determine where to locate the new class "%s", maybe try with a full namespace like "\\My\\Full\\Namespace\\%s"',
@@ -118,8 +118,6 @@ final class Generator
 
     /**
      * Actually writes and file changes that are pending.
-     *
-     * @return void
      */
     public function writeChanges()
     {

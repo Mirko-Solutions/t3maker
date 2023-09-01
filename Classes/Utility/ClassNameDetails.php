@@ -40,7 +40,7 @@ final class ClassNameDetails
      */
     public function getRelativeName(): string
     {
-        return str_replace($this->namespacePrefix.'\\', '', $this->fullClassName);
+        return str_replace($this->namespacePrefix . '\\', '', $this->fullClassName);
     }
 
     public function getRelativeNameWithoutSuffix(): string

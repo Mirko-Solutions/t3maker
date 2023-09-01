@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Generator;
 
 use JetBrains\PhpStorm\NoReturn;
@@ -70,7 +69,7 @@ class EntityClassGenerator
             $repositoryClass,
             'doctrine/Repository.tpl.php',
             [
-                'use_statements' => $useStatements
+                'use_statements' => $useStatements,
             ]
         );
     }

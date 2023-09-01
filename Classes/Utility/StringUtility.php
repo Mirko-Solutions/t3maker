@@ -13,7 +13,6 @@ namespace Mirko\T3maker\Utility;
 
 use Doctrine\Inflector\Inflector;
 use Doctrine\Inflector\InflectorFactory;
-use Symfony\Component\DependencyInjection\Container;
 
 /**
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
@@ -28,7 +27,7 @@ final class StringUtility
      */
     public static function hasSuffix(string $value, string $suffix): bool
     {
-        return 0 === strcasecmp($suffix, substr($value, -\strlen($suffix)));
+        return strcasecmp($suffix, substr($value, -\strlen($suffix))) === 0;
     }
 
     /**
@@ -208,7 +207,7 @@ final class StringUtility
 
     private static function getInflector(): Inflector
     {
-        if (null === static::$inflector) {
+        if (static::$inflector === null) {
             static::$inflector = InflectorFactory::create()->build();
         }
 

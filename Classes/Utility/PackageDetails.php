@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Utility;
 
 class PackageDetails
@@ -13,7 +12,6 @@ class PackageDetails
         private string $composerName,
         private string $namespace = ''
     ) {
-
     }
 
     public static function createInstance(string $extensionName): PackageDetails

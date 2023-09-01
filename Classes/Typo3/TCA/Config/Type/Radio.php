@@ -16,7 +16,5 @@ class Radio extends AbstractConfigType
         Type::BUILTIN_TYPE_INT,
     ];
 
-    public const POSSIBLE_RENDER_TYPES = [
-        RadioDefault::class
-    ];
+    public const POSSIBLE_RENDER_TYPES = [RadioDefault::class];
 }

@@ -25,11 +25,11 @@ final class ClassValidator
         '__method__', '__namespace__', '__trait__', 'self', 'parent',
     ];
     public const RESERVED_WORDS_FOR_PROPERTIES = [
-        "id", "createdAt", "updatedAt",
-        "version", "deletedAt", "uid",
-        "pid", "tstamp", "crdate",
-        "cruser_id", "deleted", "hidden",
-        "starttime", "endtime"
+        'id', 'createdAt', 'updatedAt',
+        'version', 'deletedAt', 'uid',
+        'pid', 'tstamp', 'crdate',
+        'cruser_id', 'deleted', 'hidden',
+        'starttime', 'endtime',
     ];
 
     /**
@@ -72,7 +72,7 @@ final class ClassValidator
 
     public static function notEmpty(string $value = null): string
     {
-        if (null === $value || '' === $value) {
+        if ($value === null || $value === '') {
             throw new \RuntimeException('This value cannot be empty.');
         }
 
@@ -81,7 +81,6 @@ final class ClassValidator
 
     public static function validateDoctrineFieldName(string $name): string
     {
-
         $reservedKeywords = self::RESERVED_WORDS_FOR_PROPERTIES;
 
         if (\in_array(strtolower($name), $reservedKeywords, true)) {
@@ -118,7 +117,7 @@ final class ClassValidator
             ]
         );
 
-        if (false === $result) {
+        if ($result === false) {
             throw new \RuntimeException(sprintf('Invalid length "%s".', $length));
         }
 
@@ -139,7 +138,7 @@ final class ClassValidator
             ]
         );
 
-        if (false === $result) {
+        if ($result === false) {
             throw new \RuntimeException(sprintf('Invalid precision "%s".', $precision));
         }
 
@@ -160,7 +159,7 @@ final class ClassValidator
             ]
         );
 
-        if (false === $result) {
+        if ($result === false) {
             throw new \RuntimeException(sprintf('Invalid scale "%s".', $scale));
         }
 
@@ -169,11 +168,11 @@ final class ClassValidator
 
     public static function validateBoolean($value)
     {
-        if ('yes' == $value) {
+        if ($value == 'yes') {
             return true;
         }
 
-        if ('no' == $value) {
+        if ($value == 'no') {
             return false;
         }
 
@@ -186,7 +185,7 @@ final class ClassValidator
 
     public static function notBlank(string $value = null): string
     {
-        if (null === $value || '' === $value) {
+        if ($value === null || $value === '') {
             throw new \RuntimeException('This value cannot be blank.');
         }
 

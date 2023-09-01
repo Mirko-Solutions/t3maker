@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Utility;
 
 use Symfony\Component\Finder\Finder;
@@ -31,9 +30,9 @@ class PackageUtility
 
             foreach ($files as $file) {
                 $reflectClassName = $namespace . $directNamespace . '\\' . StringUtility::removeSuffix(
-                        $file->getFilename(),
-                        '.php'
-                    );
+                    $file->getFilename(),
+                    '.php'
+                );
                 if (!class_exists($reflectClassName)) {
                     continue;
                 }

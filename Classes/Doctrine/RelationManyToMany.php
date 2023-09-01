@@ -21,14 +21,14 @@ final class RelationManyToMany extends BaseCollectionRelation
     public function getTargetSetterMethodName(): string
     {
         return 'add' . StringUtility::asCamelCase(
-                StringUtility::pluralCamelCaseToSingular($this->getTargetPropertyName())
-            );
+            StringUtility::pluralCamelCaseToSingular($this->getTargetPropertyName())
+        );
     }
 
     public function getTargetRemoverMethodName(): string
     {
         return 'remove' . StringUtility::asCamelCase(
-                StringUtility::pluralCamelCaseToSingular($this->getTargetPropertyName())
-            );
+            StringUtility::pluralCamelCaseToSingular($this->getTargetPropertyName())
+        );
     }
 }

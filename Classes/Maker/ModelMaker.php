@@ -83,7 +83,7 @@ class ModelMaker extends AbstractMaker
             $newField = $this->askForNextField($io, $currentFields, $entityClassDetails->getFullName(), $isFirstField);
             $isFirstField = false;
 
-            if (null === $newField) {
+            if ($newField === null) {
                 break;
             }
 
@@ -177,7 +177,6 @@ class ModelMaker extends AbstractMaker
                 'Next: When you\'re ready, create a TCA with <info>php bin/typo3 make:tca</info>',
             ]
         );
-
     }
 
     private function getPropertyNames(string $class): array
@@ -188,7 +187,7 @@ class ModelMaker extends AbstractMaker
 
         $reflClass = new \ReflectionClass($class);
 
-        return array_map(static fn(\ReflectionProperty $prop) => $prop->getName(), $reflClass->getProperties());
+        return array_map(static fn (\ReflectionProperty $prop) => $prop->getName(), $reflClass->getProperties());
     }
 
     private function createClassManipulator(string $path, SymfonyStyle $io, bool $overwrite): ClassSourceManipulator
@@ -245,15 +244,15 @@ class ModelMaker extends AbstractMaker
 
         if ('_at' === $suffix = substr($snakeCasedField, -3)) {
             $defaultType = 'datetime_immutable';
-        } elseif ('_id' === $suffix) {
+        } elseif ($suffix === '_id') {
             $defaultType = 'integer';
         } elseif (str_starts_with($snakeCasedField, 'is_')) {
             $defaultType = 'boolean';
         } elseif (str_starts_with($snakeCasedField, 'has_')) {
             $defaultType = 'boolean';
-        } elseif ('uuid' === $snakeCasedField) {
+        } elseif ($snakeCasedField === 'uuid') {
             $defaultType = Type::hasType('uuid') ? 'uuid' : 'guid';
-        } elseif ('guid' === $snakeCasedField) {
+        } elseif ($snakeCasedField === 'guid') {
             $defaultType = 'guid';
         }
 
@@ -265,12 +264,12 @@ class ModelMaker extends AbstractMaker
             EntityRelation::getValidRelationTypes(),
             ['relation']
         );
-        while (null === $type) {
+        while ($type === null) {
             $question = new Question('Field type (enter <comment>?</comment> to see all types)', $defaultType);
             $question->setAutocompleterValues($allValidTypes);
             $type = $io->askQuestion($question);
 
-            if ('?' === $type) {
+            if ($type === '?') {
                 $this->printAvailableTypes($io);
                 $io->writeln('');
 
@@ -284,28 +283,28 @@ class ModelMaker extends AbstractMaker
             }
         }
 
-        if ('relation' === $type || in_array($type, EntityRelation::getValidRelationTypes(), true)) {
+        if ($type === 'relation' || in_array($type, EntityRelation::getValidRelationTypes(), true)) {
             //TODO implement relation types
             return $this->askRelationDetails($io, $entityClass, $type, $fieldName);
         }
 
         // this is a normal field
         $data = ['fieldName' => $fieldName, 'type' => $type];
-        if ('string' === $type) {
+        if ($type === 'string') {
             // default to 255, avoid the question
-            $data['length'] = $io->ask('Field length', "255", [ClassValidator::class, 'validateLength']);
-        } elseif ('decimal' === $type) {
+            $data['length'] = $io->ask('Field length', '255', [ClassValidator::class, 'validateLength']);
+        } elseif ($type === 'decimal') {
             // 10 is the default value given in \Doctrine\DBAL\Schema\Column::$_precision
             $data['precision'] = $io->ask(
                 'Precision (total number of digits stored: 100.00 would be 5)',
-                "10",
+                '10',
                 [ClassValidator::class, 'validatePrecision']
             );
 
             // 0 is the default value given in \Doctrine\DBAL\Schema\Column::$_scale
             $data['scale'] = $io->ask(
                 'Scale (number of decimals to store: 100.00 would be 2)',
-                "0",
+                '0',
                 [ClassValidator::class, 'validateScale']
             );
         }
@@ -371,7 +370,7 @@ class ModelMaker extends AbstractMaker
                         implode(
                             ', ',
                             array_map(
-                                static fn($subType) => sprintf('<comment>%s</comment>', $subType),
+                                static fn ($subType) => sprintf('<comment>%s</comment>', $subType),
                                 $subTypes
                             )
                         )
@@ -402,7 +401,7 @@ class ModelMaker extends AbstractMaker
 
         $io->writeln('<info>Other Types</info>');
         // empty the values
-        $allTypes = array_map(static fn() => [], $allTypes);
+        $allTypes = array_map(static fn () => [], $allTypes);
         $printSection($allTypes);
     }
 
@@ -414,7 +413,7 @@ class ModelMaker extends AbstractMaker
     ): EntityRelation {
         // ask the targetEntity
         $targetEntityClass = null;
-        while (null === $targetEntityClass) {
+        while ($targetEntityClass === null) {
             $question = $this->createEntityClassQuestion('What class should this entity be related to?');
 
             $answeredEntityClass = $io->askQuestion($question);
@@ -433,11 +432,11 @@ class ModelMaker extends AbstractMaker
         }
 
         // help the user select the type
-        if ('relation' === $type) {
+        if ($type === 'relation') {
             $type = $this->askRelationType($io, $generatedEntityClass, $targetEntityClass);
         }
 
-        $askFieldName = fn(string $targetClass, string $defaultValue) => $io->ask(
+        $askFieldName = fn (string $targetClass, string $defaultValue) => $io->ask(
             sprintf('New field name inside %s', StringUtility::getShortClassName($targetClass)),
             $defaultValue,
             function ($name) use ($targetClass) {
@@ -455,7 +454,7 @@ class ModelMaker extends AbstractMaker
             }
         );
 
-        $askIsNullable = static fn(string $propertyName, string $targetClass) => $io->confirm(
+        $askIsNullable = static fn (string $propertyName, string $targetClass) => $io->confirm(
             sprintf(
                 'Is the <comment>%s</comment>.<comment>%s</comment> property allowed to be null (nullable)?',
                 StringUtility::getShortClassName($targetClass),
@@ -504,12 +503,12 @@ class ModelMaker extends AbstractMaker
             }
 
             // recommend an inverse side, except for OneToOne, where it's inefficient
-            $recommendMappingInverse = EntityRelation::ONE_TO_ONE !== $relation->getType();
+            $recommendMappingInverse = $relation->getType() !== EntityRelation::ONE_TO_ONE;
 
             $getterMethodName = 'get' . StringUtility::asCamelCase(
-                    StringUtility::getShortClassName($relation->getOwningClass())
-                );
-            if (EntityRelation::ONE_TO_ONE !== $relation->getType()) {
+                StringUtility::getShortClassName($relation->getOwningClass())
+            );
+            if ($relation->getType() !== EntityRelation::ONE_TO_ONE) {
                 // pluralize!
                 $getterMethodName = StringUtility::singularCamelCaseToPluralCamelCase($getterMethodName);
             }

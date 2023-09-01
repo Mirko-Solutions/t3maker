@@ -2,16 +2,13 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Typo3\TCA\Config\RenderType;
 
-use Doctrine\DBAL\Types\Type;
 use Mirko\T3maker\Typo3\TCA\Config\ReusablePropertiesQuestionFactory;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use TYPO3\CMS\Backend\Configuration\TypoScript\ConditionMatching\ConditionMatcher;
 
 abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
 {
@@ -80,7 +77,6 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
                 ['validation' => $propertiesConfig[$property]]
             );
             $propertiesConfiguration[$property] = $propertyConfig;
-
 
             unset($propertiesList[array_search($property, $propertiesList, true)]);
         }

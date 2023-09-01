@@ -9,7 +9,6 @@ use Mirko\T3maker\Generator\Generator;
 use Mirko\T3maker\Generator\TCAGenerator;
 use Mirko\T3maker\Parser\ModelParser;
 use Mirko\T3maker\Typo3\TCA\TCAColumnFactory;
-use Mirko\T3maker\Utility\ClassSourceManipulator;
 use Mirko\T3maker\Utility\PackageDetails;
 use Mirko\T3maker\Utility\StringUtility;
 use Mirko\T3maker\Utility\TCASourceManipulator;
@@ -17,18 +16,15 @@ use Mirko\T3maker\Utility\Typo3Utility;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class TCAMaker extends AbstractMaker
 {
-
     public function __construct(
         private TCAGenerator $TCAGenerator,
         private FileManager $fileManager,
         private TCAColumnFactory $columnFactory
     ) {
-
     }
 
     public function generate(InputInterface $input, SymfonyStyle $io, Generator $generator): void
@@ -108,7 +104,7 @@ class TCAMaker extends AbstractMaker
 
         $choices = array_keys($columnConfigurations);
         $question = new ChoiceQuestion(
-            "for which column you want to edit configuration? (press <return> to stop)",
+            'for which column you want to edit configuration? (press <return> to stop)',
             $choices,
             null
         );

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Typo3\TCA\Config;
 
 use Mirko\T3maker\Utility\StringUtility;
@@ -77,7 +76,7 @@ class ReusablePropertiesQuestionFactory
         );
         $question->setValidator(
             function ($value) {
-                if ('' === trim($value)) {
+                if (trim($value) === '') {
                     throw new \RuntimeException('The size cannot be empty');
                 }
 
@@ -338,7 +337,7 @@ class ReusablePropertiesQuestionFactory
      * @param $message
      * @return ChoiceQuestion
      */
-    private function createBoolQuestion($message = null,): ChoiceQuestion
+    private function createBoolQuestion($message = null): ChoiceQuestion
     {
         $choices = ['0', '1'];
 

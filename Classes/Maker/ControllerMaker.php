@@ -10,7 +10,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ControllerMaker extends AbstractMaker
 {
-
     public function generate(InputInterface $input, SymfonyStyle $io, Generator $generator): void
     {
         // TODO: Implement generate() method.

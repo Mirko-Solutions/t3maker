@@ -15,7 +15,6 @@ abstract class AbstractMaker implements MakerInterface
 {
     /**
      * @param SymfonyStyle $io
-     * @return void
      */
     protected function writeSuccessMessage(SymfonyStyle $io): void
     {
