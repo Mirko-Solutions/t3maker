@@ -1,0 +1,47 @@
+name: CI with Composer scripts
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  code-quality:
+    name: Code quality checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛎️ Checkout
+        uses: actions/checkout@v3
+      - name: 🐘 Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2.5
+      - name: ‍ℹ️ Show Composer version
+        run: composer -V
+      - name: ℹ️ Show the Composer configuration
+        run: composer config -g -l
+      - name: 💾 Cache dependencies installed with composer
+        uses: actions/cache@v3
+        with:
+          key: php${{ matrix.php }}-composer-${{ hashFiles('**/composer.json') }}
+          path: ~/.cache/composer
+          restore-keys: php${{ matrix.php }}-composer-\n
+      - name: ⬇️ Install Composer dependencies
+        run: composer install --no-progress
+      - name: ▶️ Run command
+        run: composer ci:${{ matrix.command }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php:
+          - 8.0
+          - 8.1
+          - 8.2
+        command:
+          - php:cs-fixer
+          - php:sniff
