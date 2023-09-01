@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker;
 
+use Exception;
+use InvalidArgumentException;
 use Mirko\T3maker\Utility\PackageDetails;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
@@ -66,7 +68,7 @@ class FileManager
     /**
      * Attempts to make the path relative to the root directory.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function relativizePath(string $absolutePath): string
     {
@@ -91,7 +93,7 @@ class FileManager
     public function getFileContents(string $path): string
     {
         if (!$this->fileExists($path)) {
-            throw new \InvalidArgumentException(sprintf('Cannot find file "%s"', $path));
+            throw new InvalidArgumentException(sprintf('Cannot find file "%s"', $path));
         }
 
         return file_get_contents($this->absolutizePath($path));
@@ -112,7 +114,7 @@ class FileManager
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function getRelativePathForFutureClass(PackageDetails $packageDetails, string $className): ?string
     {
@@ -138,7 +140,7 @@ class FileManager
             if ($pathPart === '..') {
                 // we need to remove the previous entry
                 if ($currentIndex === -1) {
-                    throw new \Exception(
+                    throw new Exception(
                         sprintf('Problem making path relative - is the path "%s" absolute?', $absolutePath)
                     );
                 }

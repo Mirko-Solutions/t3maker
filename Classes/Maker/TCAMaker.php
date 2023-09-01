@@ -13,6 +13,7 @@ use Mirko\T3maker\Utility\PackageDetails;
 use Mirko\T3maker\Utility\StringUtility;
 use Mirko\T3maker\Utility\TCASourceManipulator;
 use Mirko\T3maker\Utility\Typo3Utility;
+use ReflectionClass;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
@@ -35,7 +36,7 @@ class TCAMaker extends AbstractMaker
         $package = PackageDetails::createInstance($extensionName);
         $this->fileManager->setRootDirectory(Typo3Utility::getExtensionPath($package->getName()));
         $this->fileManager->setIO($io);
-        $modelReflection = new \ReflectionClass($name);
+        $modelReflection = new ReflectionClass($name);
         $extensionRelativePath = $this->TCAGenerator->getTcaExtensionFilePath($package, $modelReflection);
         $tcaPath = $this->fileManager->absolutizePath($extensionRelativePath);
 

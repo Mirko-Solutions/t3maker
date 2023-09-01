@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Utility;
 
+use ReflectionClass;
 use Symfony\Component\Finder\Finder;
 use TYPO3\CMS\Core\Package\Package;
 use TYPO3\CMS\Core\Package\PackageManager;
@@ -37,7 +38,7 @@ class PackageUtility
                     continue;
                 }
 
-                $class = new \ReflectionClass($reflectClassName);
+                $class = new ReflectionClass($reflectClassName);
 
                 if ($class->isAbstract() || $class->isInterface() || $class->isTrait()) {
                     continue;

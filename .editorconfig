@@ -13,6 +13,6 @@ trim_trailing_whitespace = true
 [*.json]
 indent_style = tab
 
-# YAML files
-[{*.yml,*.yaml}]
+# YAML-Files
+[*.{yaml,yml}]
 indent_size = 2

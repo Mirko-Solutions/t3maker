@@ -36,18 +36,15 @@ class ModelParser
 
     /**
      * @param ReflectionProperty $property
+     *
      * @return array<ReflectionNamedType>
      */
     public static function getPropertyType(ReflectionProperty $property): array
     {
         $propertyType = $property->getType();
         return match (true) {
-            $propertyType instanceof ReflectionNamedType => (static function () use ($propertyType): array {
-                return [$propertyType];
-            })(),
-            $propertyType instanceof ReflectionUnionType => (static function () use ($propertyType): array {
-                return $propertyType->getTypes();
-            })(),
+            $propertyType instanceof ReflectionNamedType => (static fn (): array => [$propertyType])(),
+            $propertyType instanceof ReflectionUnionType => (static fn (): array => $propertyType->getTypes())(),
             default => []
         };
     }

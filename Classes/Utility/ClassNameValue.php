@@ -11,10 +11,12 @@
 
 namespace Mirko\T3maker\Utility;
 
+use Stringable;
+
 /**
  * @internal
  */
-final class ClassNameValue implements \Stringable
+final class ClassNameValue implements Stringable
 {
     public function __construct(
         private string $typeHint,

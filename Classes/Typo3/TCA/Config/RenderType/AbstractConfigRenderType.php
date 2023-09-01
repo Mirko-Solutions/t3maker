@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mirko\T3maker\Typo3\TCA\Config\RenderType;
 
 use Mirko\T3maker\Typo3\TCA\Config\ReusablePropertiesQuestionFactory;
+use ReflectionProperty;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
@@ -30,7 +31,7 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
     {
     }
 
-    public function askForConfigPresets(SymfonyStyle $io, \ReflectionProperty $property): array
+    public function askForConfigPresets(SymfonyStyle $io, ReflectionProperty $property): array
     {
         return [];
     }
@@ -42,7 +43,8 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
 
     /**
      * @param SymfonyStyle $io
-     * @param array $propertiesConfig
+     * @param array        $propertiesConfig
+     *
      * @return array
      */
     protected function askForRequiredProperties(SymfonyStyle $io, array $propertiesConfig = []): array
@@ -57,9 +59,7 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
             throw new InvalidArgumentException(sprintf('Value "%s" is invalid', $value));
         };
 
-        $normalizer = static function ($value) use ($propertiesList) {
-            return array_key_exists($value, $propertiesList) ? $propertiesList[$value] : $value;
-        };
+        $normalizer = static fn ($value) => array_key_exists($value, $propertiesList) ? $propertiesList[$value] : $value;
 
         while (!empty($propertiesList)) {
             $question = new ChoiceQuestion(
@@ -86,7 +86,8 @@ abstract class AbstractConfigRenderType implements ConfigRenderTypeInterface
 
     /**
      * @param SymfonyStyle $io
-     * @param array $propertiesList
+     * @param array        $propertiesList
+     *
      * @return array
      */
     protected function askForAdditionalProperties(SymfonyStyle $io, array $propertiesList = []): array

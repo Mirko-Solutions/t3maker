@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mirko\T3maker\Command;
 
 use JetBrains\PhpStorm\NoReturn;
+use LogicException;
 use Mirko\T3maker\Generator\Generator;
 use Mirko\T3maker\Maker\MakerInterface;
 use Mirko\T3maker\Utility\Typo3Utility;
@@ -68,7 +69,7 @@ abstract class AbstractMakeCommand extends Command
         $this->maker->generate($input, $this->io, $this->generator);
 
         if ($this->generator->hasPendingOperations()) {
-            throw new \LogicException('Make sure to call the writeChanges() method on the generator.');
+            throw new LogicException('Make sure to call the writeChanges() method on the generator.');
         }
 
         return Command::SUCCESS;

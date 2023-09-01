@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Generator;
 
+use Exception;
+use LogicException;
 use Mirko\T3maker\FileManager;
 use Mirko\T3maker\Utility\ClassDetails;
 use Mirko\T3maker\Utility\PackageDetails;
 use Mirko\T3maker\Utility\StringUtility;
 use Mirko\T3maker\Utility\Typo3Utility;
 use Mirko\T3maker\Validator\ClassValidator;
+use RuntimeException;
 
 final class Generator
 {
@@ -42,13 +45,13 @@ final class Generator
     /**
      * Generate a new file for a class from a template.
      *
-     * @param string $className The fully-qualified class name
+     * @param string $className    The fully-qualified class name
      * @param string $templateName Template name in Resources/skeleton to use
-     * @param array $variables Array of variables to pass to the template
+     * @param array  $variables    Array of variables to pass to the template
+     *
+     * @throws Exception
      *
      * @return string The path where the file will be created
-     *
-     * @throws \Exception
      */
     public function generateClass(PackageDetails $package, string $className, string $templateName, array $variables = []): string
     {
@@ -56,7 +59,7 @@ final class Generator
         $targetPath = $this->fileManager->getRelativePathForFutureClass($package, $className);
 
         if ($targetPath === null) {
-            throw new \LogicException(
+            throw new LogicException(
                 sprintf(
                     'Could not determine where to locate the new class "%s", maybe try with a full namespace like "\\My\\Full\\Namespace\\%s"',
                     $className,
@@ -91,7 +94,7 @@ final class Generator
     private function addOperation(string $targetPath, string $templateName, array $variables): void
     {
         if ($this->fileManager->fileExists($targetPath)) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 sprintf(
                     'The file "%s" can\'t be generated because it already exists.',
                     $this->fileManager->relativizePath($targetPath)
@@ -106,7 +109,7 @@ final class Generator
             $templatePath = Typo3Utility::getExtensionPath('t3maker') . 'Resources/skeleton/' . $templateName;
 
             if (!file_exists($templatePath)) {
-                throw new \Exception(sprintf('Cannot find template "%s"', $templateName));
+                throw new Exception(sprintf('Cannot find template "%s"', $templateName));
             }
         }
 
@@ -119,7 +122,7 @@ final class Generator
     /**
      * Actually writes and file changes that are pending.
      */
-    public function writeChanges()
+    public function writeChanges(): void
     {
         foreach ($this->pendingOperations as $targetPath => $templateData) {
             if (isset($templateData['contents'])) {
@@ -145,7 +148,7 @@ final class Generator
     public function getFileContentsForPendingOperation(string $targetPath): string
     {
         if (!isset($this->pendingOperations[$targetPath])) {
-            throw new \RuntimeException(sprintf('File "%s" is not in the Generator\'s pending operations', $targetPath));
+            throw new RuntimeException(sprintf('File "%s" is not in the Generator\'s pending operations', $targetPath));
         }
 
         $templatePath = $this->pendingOperations[$targetPath]['template'];

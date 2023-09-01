@@ -14,13 +14,13 @@ class PackageDetails
     ) {
     }
 
-    public static function createInstance(string $extensionName): PackageDetails
+    public static function createInstance(string $extensionName): self
     {
         $package = PackageUtility::getPackage($extensionName);
         $composerName = $package->getValueFromComposerManifest('name');
         $composerNamespaces = AutoloadUtility::getPackageNamespace($package);
 
-        return new PackageDetails($extensionName, $composerNamespaces, $composerName);
+        return new self($extensionName, $composerNamespaces, $composerName);
     }
 
     /**

@@ -17,8 +17,9 @@ class TCAGenerator
     }
 
     /**
-     * @param PackageDetails $package
+     * @param PackageDetails  $package
      * @param ReflectionClass $class
+     *
      * @return string
      */
     public function generateTCAFromModel(PackageDetails $package, ReflectionClass $class)

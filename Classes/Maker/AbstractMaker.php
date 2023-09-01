@@ -6,6 +6,7 @@ namespace Mirko\T3maker\Maker;
 
 use Mirko\T3maker\Utility\PackageDetails;
 use Mirko\T3maker\Validator\ClassValidator;
+use ReflectionClass;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
@@ -50,9 +51,7 @@ abstract class AbstractMaker implements MakerInterface
         );
         $question->setValidator([ClassValidator::class, 'notEmpty']);
         $question->setNormalizer(
-            function ($value) use ($composerNamespaces) {
-                return array_key_exists($value, $composerNamespaces) ? $composerNamespaces[$value] : $value;
-            }
+            fn ($value) => array_key_exists($value, $composerNamespaces) ? $composerNamespaces[$value] : $value
         );
         $answer = $io->askQuestion($question);
 
@@ -75,6 +74,6 @@ abstract class AbstractMaker implements MakerInterface
 
     protected function getPathOfClass(string $class): string
     {
-        return (new \ReflectionClass($class))->getFileName();
+        return (new ReflectionClass($class))->getFileName();
     }
 }

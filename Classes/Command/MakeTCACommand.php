@@ -55,9 +55,7 @@ final class MakeTCACommand extends AbstractMakeCommand
 
         $question->setValidator([ClassValidator::class, 'notEmpty']);
         $question->setNormalizer(
-            function ($value) use ($choices) {
-                return array_key_exists($value, $choices) ? $choices[$value] : $value;
-            }
+            fn ($value) => array_key_exists($value, $choices) ? $choices[$value] : $value
         );
         $entityClassName = $this->io->askQuestion($question);
 

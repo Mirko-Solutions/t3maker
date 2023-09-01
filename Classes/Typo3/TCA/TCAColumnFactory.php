@@ -8,6 +8,8 @@ use Mirko\T3maker\Parser\ModelParser;
 use Mirko\T3maker\Typo3\TCA\Config\RenderType\ConfigRenderTypeInterface;
 use Mirko\T3maker\Typo3\TCA\Config\RenderType\DefaultRenderTypeInterface;
 use Mirko\T3maker\Typo3\TCA\Config\Type\ConfigTypeInterface;
+use ReflectionNamedType;
+use ReflectionProperty;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -19,7 +21,7 @@ class TCAColumnFactory
     {
     }
 
-    public function createColumnConfigForTableColumn(\ReflectionProperty $property, SymfonyStyle $io): array
+    public function createColumnConfigForTableColumn(ReflectionProperty $property, SymfonyStyle $io): array
     {
         $this->io = $io;
 
@@ -51,7 +53,8 @@ class TCAColumnFactory
     }
 
     /**
-     * @param array<\ReflectionNamedType> $propertyTypes
+     * @param array<ReflectionNamedType> $propertyTypes
+     *
      * @return ConfigTypeInterface
      */
     private function askConfigurationForPropertyType(array $propertyTypes): ConfigTypeInterface

@@ -6,6 +6,7 @@ namespace Mirko\T3maker\Typo3\TCA\Config\RenderType;
 
 use Mirko\T3maker\Typo3\TCA\Config\ReusablePropertiesQuestionFactory;
 use Mirko\T3maker\Utility\StringUtility;
+use ReflectionProperty;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -27,7 +28,7 @@ class InlineDefault extends AbstractConfigRenderType implements DefaultRenderTyp
 
     ];
 
-    public function askForConfigPresets(SymfonyStyle $io, \ReflectionProperty $property): array
+    public function askForConfigPresets(SymfonyStyle $io, ReflectionProperty $property): array
     {
         $question = new ConfirmationQuestion('Do you want to apply File Abstraction Layer (FAL) TCA preset?', false);
         $answer = $io->askQuestion($question);

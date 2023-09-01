@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Validator;
 
+use InvalidArgumentException;
 use Mirko\T3maker\Utility\StringUtility;
+use RuntimeException;
 
 final class ClassValidator
 {
@@ -35,6 +37,7 @@ final class ClassValidator
     /**
      * @param string $className
      * @param string $errorMessage
+     *
      * @return string
      */
     public static function validateClassName(string $className, string $errorMessage = ''): string
@@ -47,7 +50,7 @@ final class ClassValidator
             if (!mb_check_encoding($piece, 'UTF-8')) {
                 $errorMessage = $errorMessage ?: sprintf('"%s" is not a UTF-8-encoded string.', $piece);
 
-                throw new \RuntimeException($errorMessage);
+                throw new RuntimeException($errorMessage);
             }
 
             if (!preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $piece)) {
@@ -56,11 +59,11 @@ final class ClassValidator
                     $className
                 );
 
-                throw new \RuntimeException($errorMessage);
+                throw new RuntimeException($errorMessage);
             }
 
             if (\in_array(strtolower($shortClassName), self::RESERVED_WORDS, true)) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     sprintf('"%s" is a reserved keyword and thus cannot be used as class name in PHP.', $shortClassName)
                 );
             }
@@ -73,7 +76,7 @@ final class ClassValidator
     public static function notEmpty(string $value = null): string
     {
         if ($value === null || $value === '') {
-            throw new \RuntimeException('This value cannot be empty.');
+            throw new RuntimeException('This value cannot be empty.');
         }
 
         return $value;
@@ -84,7 +87,7 @@ final class ClassValidator
         $reservedKeywords = self::RESERVED_WORDS_FOR_PROPERTIES;
 
         if (\in_array(strtolower($name), $reservedKeywords, true)) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 sprintf('"%s" is a reserved keyword and thus cannot be used as property name.', $name)
             );
         }
@@ -97,7 +100,7 @@ final class ClassValidator
     {
         // check for valid PHP variable name
         if (!StringUtility::isValidPhpVariableName($name)) {
-            throw new \InvalidArgumentException(sprintf('"%s" is not a valid PHP property name.', $name));
+            throw new InvalidArgumentException(sprintf('"%s" is not a valid PHP property name.', $name));
         }
 
         return $name;
@@ -118,7 +121,7 @@ final class ClassValidator
         );
 
         if ($result === false) {
-            throw new \RuntimeException(sprintf('Invalid length "%s".', $length));
+            throw new RuntimeException(sprintf('Invalid length "%s".', $length));
         }
 
         return $result;
@@ -139,7 +142,7 @@ final class ClassValidator
         );
 
         if ($result === false) {
-            throw new \RuntimeException(sprintf('Invalid precision "%s".', $precision));
+            throw new RuntimeException(sprintf('Invalid precision "%s".', $precision));
         }
 
         return $result;
@@ -160,7 +163,7 @@ final class ClassValidator
         );
 
         if ($result === false) {
-            throw new \RuntimeException(sprintf('Invalid scale "%s".', $scale));
+            throw new RuntimeException(sprintf('Invalid scale "%s".', $scale));
         }
 
         return $result;
@@ -177,7 +180,7 @@ final class ClassValidator
         }
 
         if (null === $valueAsBool = filter_var($value, \FILTER_VALIDATE_BOOLEAN, \FILTER_NULL_ON_FAILURE)) {
-            throw new \RuntimeException(sprintf('Invalid bool value "%s".', $value));
+            throw new RuntimeException(sprintf('Invalid bool value "%s".', $value));
         }
 
         return $valueAsBool;
@@ -186,7 +189,7 @@ final class ClassValidator
     public static function notBlank(string $value = null): string
     {
         if ($value === null || $value === '') {
-            throw new \RuntimeException('This value cannot be blank.');
+            throw new RuntimeException('This value cannot be blank.');
         }
 
         return $value;

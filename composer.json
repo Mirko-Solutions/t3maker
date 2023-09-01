@@ -47,7 +47,7 @@
 		"sort-packages": true
 	},
 	"scripts": {
-		"ci:php:cs-fixer": "php-cs-fixer fix --config .php-cs-fixer.php -v --dry-run --using-cache no --diff",
+		"ci:php:cs-fixer": "php-cs-fixer fix -v --dry-run --using-cache no --diff",
 		"ci:php:sniff": "phpcs Classes Configuration"
 	},
 	"scripts-descriptions": {

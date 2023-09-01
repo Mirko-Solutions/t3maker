@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Mirko\T3maker\Maker;
 
 use Doctrine\DBAL\Types\Type;
+use Exception;
+use InvalidArgumentException;
 use JetBrains\PhpStorm\NoReturn;
 use Mirko\T3maker\Doctrine\EntityRelation;
 use Mirko\T3maker\FileManager;
@@ -16,6 +18,8 @@ use Mirko\T3maker\Utility\PackageUtility;
 use Mirko\T3maker\Utility\StringUtility;
 use Mirko\T3maker\Utility\Typo3Utility;
 use Mirko\T3maker\Validator\ClassValidator;
+use ReflectionClass;
+use ReflectionProperty;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -128,7 +132,7 @@ class ModelMaker extends AbstractMaker
                             // The *other* class will receive the ManyToOne
                             $otherManipulator->addManyToOneRelation($newField->getOwningRelation());
                             if (!$newField->getMapInverseRelation()) {
-                                throw new \Exception(
+                                throw new Exception(
                                     'Somehow a OneToMany relationship is being created, but the inverse side will not be mapped?'
                                 );
                             }
@@ -151,7 +155,7 @@ class ModelMaker extends AbstractMaker
 
                         break;
                     default:
-                        throw new \Exception('Invalid relation type');
+                        throw new Exception('Invalid relation type');
                 }
 
                 // save the inverse side if it's being mapped
@@ -160,7 +164,7 @@ class ModelMaker extends AbstractMaker
                 }
                 $currentFields[] = $newFieldName;
             } else {
-                throw new \Exception('Invalid value');
+                throw new Exception('Invalid value');
             }
 
             foreach ($fileManagerOperations as $path => $manipulatorOrMessage) {
@@ -185,9 +189,9 @@ class ModelMaker extends AbstractMaker
             return [];
         }
 
-        $reflClass = new \ReflectionClass($class);
+        $reflClass = new ReflectionClass($class);
 
-        return array_map(static fn (\ReflectionProperty $prop) => $prop->getName(), $reflClass->getProperties());
+        return array_map(static fn (ReflectionProperty $prop) => $prop->getName(), $reflClass->getProperties());
     }
 
     private function createClassManipulator(string $path, SymfonyStyle $io, bool $overwrite): ClassSourceManipulator
@@ -226,7 +230,7 @@ class ModelMaker extends AbstractMaker
                 }
 
                 if (\in_array($name, $fields)) {
-                    throw new \InvalidArgumentException(sprintf('The "%s" property already exists.', $name));
+                    throw new InvalidArgumentException(sprintf('The "%s" property already exists.', $name));
                 }
 
                 return ClassValidator::validateDoctrineFieldName($name);
@@ -357,7 +361,7 @@ class ModelMaker extends AbstractMaker
             ],
         ];
 
-        $printSection = static function (array $sectionTypes) use ($io, &$allTypes) {
+        $printSection = static function (array $sectionTypes) use ($io, &$allTypes): void {
             foreach ($sectionTypes as $mainType => $subTypes) {
                 unset($allTypes[$mainType]);
                 $line = sprintf('  * <comment>%s</comment>', $mainType);
@@ -445,7 +449,7 @@ class ModelMaker extends AbstractMaker
                 // same make:entity run. property_exists() only knows about
                 // properties that *originally* existed on this class.
                 if (property_exists($targetClass, $name)) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         sprintf('The "%s" class already has a "%s" property.', $targetClass, $name)
                     );
                 }
@@ -495,7 +499,7 @@ class ModelMaker extends AbstractMaker
             );
         };
 
-        $askInverseSide = function (EntityRelation $relation) use ($io) {
+        $askInverseSide = function (EntityRelation $relation) use ($io): void {
             if ($this->isClassInVendor($relation->getInverseClass())) {
                 $relation->setMapInverseRelation(false);
 
@@ -630,7 +634,7 @@ class ModelMaker extends AbstractMaker
 
                 break;
             default:
-                throw new \InvalidArgumentException('Invalid type: ' . $type);
+                throw new InvalidArgumentException('Invalid type: ' . $type);
         }
 
         return $relation;
@@ -716,7 +720,7 @@ class ModelMaker extends AbstractMaker
         $question->setValidator(
             function ($type) {
                 if (!\in_array($type, EntityRelation::getValidRelationTypes())) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         sprintf('Invalid type: use one of: %s', implode(', ', EntityRelation::getValidRelationTypes()))
                     );
                 }

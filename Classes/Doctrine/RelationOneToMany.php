@@ -12,6 +12,7 @@
 namespace Mirko\T3maker\Doctrine;
 
 use Mirko\T3maker\Utility\StringUtility;
+use RuntimeException;
 
 /**
  * @internal
@@ -30,6 +31,6 @@ final class RelationOneToMany extends BaseCollectionRelation
 
     public function isMapInverseRelation(): bool
     {
-        throw new \RuntimeException('OneToMany IS the inverse side!');
+        throw new RuntimeException('OneToMany IS the inverse side!');
     }
 }

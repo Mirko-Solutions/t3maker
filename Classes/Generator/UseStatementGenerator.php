@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Generator;
 
+use Stringable;
+
 /**
  * Converts fully qualified class names into sorted use statements for templates.
  *
@@ -20,7 +22,7 @@ namespace Mirko\T3maker\Generator;
  *
  * @internal
  */
-final class UseStatementGenerator implements \Stringable
+final class UseStatementGenerator implements Stringable
 {
     /**
      * For use statements that contain aliases, the $classesToBeImported array
@@ -28,7 +30,7 @@ final class UseStatementGenerator implements \Stringable
      * use statement would appear as "use Some\Class::class as 'ZXY'". It is ok
      * to mix non-aliases classes with aliases.
      *
-     * @param string[]|array<string, string> $classesToBeImported
+     * @param array<string, string>|string[] $classesToBeImported
      */
     public function __construct(
         private array $classesToBeImported,
@@ -70,7 +72,7 @@ final class UseStatementGenerator implements \Stringable
     }
 
     /**
-     * @param string|string[]|array<string, string> $className
+     * @param array<string, string>|string|string[] $className
      */
     public function addUseStatement(array|string $className): void
     {
