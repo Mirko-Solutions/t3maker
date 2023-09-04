@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Mirko\T3maker\Typo3\TCA\Config\RenderType;
 
 use Mirko\T3maker\Typo3\TCA\Config\ReusablePropertiesQuestionFactory;
-use Mirko\T3maker\Utility\StringUtility;
 use ReflectionProperty;
+use Symfony\Bundle\MakerBundle\Str;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -38,7 +38,7 @@ class InlineDefault extends AbstractConfigRenderType implements DefaultRenderTyp
         }
 
         return \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::getFileFieldTCAConfig(
-            StringUtility::asSnakeCase($property->getName()),
+            Str::asSnakeCase($property->getName()),
             [
                 'appearance' => [
                     'createNewRelationLinkTitle' => 'LLL:EXT:cms/locallang_ttc.xlf:images.addFileReference',

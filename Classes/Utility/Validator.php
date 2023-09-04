@@ -6,6 +6,7 @@ namespace Mirko\T3maker\Utility;
 
 use Mirko\T3maker\Validator\ClassValidator;
 use RuntimeException;
+use Symfony\Bundle\MakerBundle\Str;
 
 final class Validator
 {
@@ -13,7 +14,7 @@ final class Validator
     {
         // remove potential opening slash so we don't match on it
         $pieces = explode('\\', ltrim($className, '\\'));
-        $shortClassName = StringUtility::getShortClassName($className);
+        $shortClassName = Str::getShortClassName($className);
 
         $reservedKeywords = ClassValidator::RESERVED_WORDS;
 

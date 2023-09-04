@@ -15,11 +15,11 @@ use Mirko\T3maker\Generator\Generator;
 use Mirko\T3maker\Utility\ClassSourceManipulator;
 use Mirko\T3maker\Utility\PackageDetails;
 use Mirko\T3maker\Utility\PackageUtility;
-use Mirko\T3maker\Utility\StringUtility;
 use Mirko\T3maker\Utility\Typo3Utility;
 use Mirko\T3maker\Validator\ClassValidator;
 use ReflectionClass;
 use ReflectionProperty;
+use Symfony\Bundle\MakerBundle\Str;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -245,7 +245,7 @@ class ModelMaker extends AbstractMaker
         $defaultType = 'string';
         // try to guess the type by the field name prefix/suffix
         // convert to snake case for simplicity
-        $snakeCasedField = StringUtility::asSnakeCase($fieldName);
+        $snakeCasedField = Str::asSnakeCase($fieldName);
         $suffix = substr($snakeCasedField, -3);
         if ($suffix === '_at') {
             $defaultType = 'datetime_immutable';
@@ -442,7 +442,7 @@ class ModelMaker extends AbstractMaker
         }
 
         $askFieldName = fn (string $targetClass, string $defaultValue) => $io->ask(
-            sprintf('New field name inside %s', StringUtility::getShortClassName($targetClass)),
+            sprintf('New field name inside %s', Str::getShortClassName($targetClass)),
             $defaultValue,
             function ($name) use ($targetClass) {
                 // it's still *possible* to create duplicate properties - by
@@ -462,7 +462,7 @@ class ModelMaker extends AbstractMaker
         $askIsNullable = static fn (string $propertyName, string $targetClass) => $io->confirm(
             sprintf(
                 'Is the <comment>%s</comment>.<comment>%s</comment> property allowed to be null (nullable)?',
-                StringUtility::getShortClassName($targetClass),
+                Str::getShortClassName($targetClass),
                 $propertyName
             )
         );
@@ -474,21 +474,21 @@ class ModelMaker extends AbstractMaker
                     sprintf(
                         'A <comment>%s</comment>
                                 is "orphaned" when it is removed from its related <comment>%s</comment>.',
-                        StringUtility::getShortClassName($owningClass),
-                        StringUtility::getShortClassName($inverseClass)
+                        Str::getShortClassName($owningClass),
+                        Str::getShortClassName($inverseClass)
                     ),
                     sprintf(
                         'e.g. <comment>$%s->remove%s($%s)</comment>',
-                        StringUtility::asLowerCamelCase(StringUtility::getShortClassName($inverseClass)),
-                        StringUtility::asCamelCase(StringUtility::getShortClassName($owningClass)),
-                        StringUtility::asLowerCamelCase(StringUtility::getShortClassName($owningClass))
+                        Str::asLowerCamelCase(Str::getShortClassName($inverseClass)),
+                        Str::asCamelCase(Str::getShortClassName($owningClass)),
+                        Str::asLowerCamelCase(Str::getShortClassName($owningClass))
                     ),
                     '',
                     sprintf(
                         'NOTE: If a <comment>%s</comment>
                                 may *change* from one <comment>%s</comment> to another, answer "no".',
-                        StringUtility::getShortClassName($owningClass),
-                        StringUtility::getShortClassName($inverseClass)
+                        Str::getShortClassName($owningClass),
+                        Str::getShortClassName($inverseClass)
                     ),
                 ]
             );
@@ -512,20 +512,18 @@ class ModelMaker extends AbstractMaker
             // recommend an inverse side, except for OneToOne, where it's inefficient
             $recommendMappingInverse = $relation->getType() !== EntityRelation::ONE_TO_ONE;
 
-            $getterMethodName = 'get' . StringUtility::asCamelCase(
-                StringUtility::getShortClassName($relation->getOwningClass())
-            );
+            $getterMethodName = 'get' . Str::asCamelCase(Str::getShortClassName($relation->getOwningClass()));
             if ($relation->getType() !== EntityRelation::ONE_TO_ONE) {
                 // pluralize!
-                $getterMethodName = StringUtility::singularCamelCaseToPluralCamelCase($getterMethodName);
+                $getterMethodName = Str::singularCamelCaseToPluralCamelCase($getterMethodName);
             }
             $mapInverse = $io->confirm(
                 sprintf(
                     'Do you want to add a new property to <comment>%s</comment> so that you can access/update
                             <comment>%s</comment> objects from it - e.g. <comment>$%s->%s()</comment>?',
-                    StringUtility::getShortClassName($relation->getInverseClass()),
-                    StringUtility::getShortClassName($relation->getOwningClass()),
-                    StringUtility::asLowerCamelCase(StringUtility::getShortClassName($relation->getInverseClass())),
+                    Str::getShortClassName($relation->getInverseClass()),
+                    Str::getShortClassName($relation->getOwningClass()),
+                    Str::asLowerCamelCase(Str::getShortClassName($relation->getInverseClass())),
                     $getterMethodName
                 ),
                 $recommendMappingInverse
@@ -547,14 +545,14 @@ class ModelMaker extends AbstractMaker
                     sprintf(
                         'A new property will also be added to the <comment>%s</comment> class so that
                                 you can access and set the related <comment>%s</comment> object from it.',
-                        StringUtility::getShortClassName($relation->getOwningClass()),
-                        StringUtility::getShortClassName($relation->getInverseClass())
+                        Str::getShortClassName($relation->getOwningClass()),
+                        Str::getShortClassName($relation->getInverseClass())
                     )
                 );
                 $relation->setOwningProperty(
                     $askFieldName(
                         $relation->getOwningClass(),
-                        StringUtility::asLowerCamelCase(StringUtility::getShortClassName($relation->getInverseClass()))
+                        Str::asLowerCamelCase(Str::getShortClassName($relation->getInverseClass()))
                     )
                 );
 
@@ -589,15 +587,15 @@ class ModelMaker extends AbstractMaker
                         sprintf(
                             'A new property will also be added to the <comment>%s</comment> class so that
                                     you can access the related <comment>%s</comment> objects from it.',
-                            StringUtility::getShortClassName($relation->getInverseClass()),
-                            StringUtility::getShortClassName($relation->getOwningClass())
+                            Str::getShortClassName($relation->getInverseClass()),
+                            Str::getShortClassName($relation->getOwningClass())
                         )
                     );
                     $relation->setInverseProperty(
                         $askFieldName(
                             $relation->getInverseClass(),
-                            StringUtility::singularCamelCaseToPluralCamelCase(
-                                StringUtility::getShortClassName($relation->getOwningClass())
+                            Str::singularCamelCaseToPluralCamelCase(
+                                Str::getShortClassName($relation->getOwningClass())
                             )
                         )
                     );
@@ -625,15 +623,15 @@ class ModelMaker extends AbstractMaker
                         sprintf(
                             'A new property will also be added to the <comment>%s</comment> class so that
                                     you can access the related <comment>%s</comment> object from it.',
-                            StringUtility::getShortClassName($relation->getInverseClass()),
-                            StringUtility::getShortClassName($relation->getOwningClass())
+                            Str::getShortClassName($relation->getInverseClass()),
+                            Str::getShortClassName($relation->getOwningClass())
                         )
                     );
                     $relation->setInverseProperty(
                         $askFieldName(
                             $relation->getInverseClass(),
-                            StringUtility::asLowerCamelCase(
-                                StringUtility::getShortClassName($relation->getOwningClass())
+                            Str::asLowerCamelCase(
+                                Str::getShortClassName($relation->getOwningClass())
                             )
                         )
                     );
@@ -662,8 +660,8 @@ class ModelMaker extends AbstractMaker
     {
         $io->writeln('What type of relationship is this?');
 
-        $originalEntityShort = StringUtility::getShortClassName($entityClass);
-        $targetEntityShort = StringUtility::getShortClassName($targetEntityClass);
+        $originalEntityShort = Str::getShortClassName($entityClass);
+        $targetEntityShort = Str::getShortClassName($targetEntityClass);
         $rows = [];
         $rows[] = [
             EntityRelation::MANY_TO_ONE,

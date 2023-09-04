@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Mirko\T3maker\Validator;
 
 use InvalidArgumentException;
-use Mirko\T3maker\Utility\StringUtility;
 use RuntimeException;
+use Symfony\Bundle\MakerBundle\Str;
 
 final class ClassValidator
 {
@@ -44,9 +44,9 @@ final class ClassValidator
      */
     public static function validateClassName(string $className, string $errorMessage = ''): string
     {
-        // remove potential opening slash so we don't match on it
+        // Remove potential opening slash, so we don't match on it.
         $pieces = explode('\\', ltrim($className, '\\'));
-        $shortClassName = StringUtility::getShortClassName($className);
+        $shortClassName = Str::getShortClassName($className);
 
         foreach ($pieces as $piece) {
             if (!mb_check_encoding($piece, 'UTF-8')) {
@@ -102,7 +102,7 @@ final class ClassValidator
     public static function validatePropertyName(string $name): string
     {
         // check for valid PHP variable name
-        if (!StringUtility::isValidPhpVariableName($name)) {
+        if (!Str::isValidPhpVariableName($name)) {
             throw new InvalidArgumentException(sprintf('"%s" is not a valid PHP property name.', $name));
         }
 

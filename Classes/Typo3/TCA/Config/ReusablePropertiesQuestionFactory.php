@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Mirko\T3maker\Typo3\TCA\Config;
 
 use InvalidArgumentException;
-use Mirko\T3maker\Utility\StringUtility;
 use RuntimeException;
+use Symfony\Bundle\MakerBundle\Str;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -55,7 +55,7 @@ class ReusablePropertiesQuestionFactory
     {
         $this->property = $property;
 
-        $propertyCarmelCase = StringUtility::asCamelCase($property);
+        $propertyCarmelCase = Str::asCamelCase($property);
 
         $method = 'askQuestionFor' . $propertyCarmelCase . 'Property';
 

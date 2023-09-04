@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Mirko\T3maker\Parser;
 
 use Mirko\T3maker\Typo3\TCA\Config\Type\Input;
-use Mirko\T3maker\Utility\StringUtility;
 use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionUnionType;
+use Symfony\Bundle\MakerBundle\Str;
 
 class ModelParser
 {
@@ -24,7 +24,7 @@ class ModelParser
             // Get the property name and type
             $propertyName = $property->getName();
             // Add the property to the TCA configuration
-            $columns[StringUtility::asSnakeCase($propertyName)] = [
+            $columns[Str::asSnakeCase($propertyName)] = [
                 'label' => ucfirst($propertyName),
                 'config' => [
                     'type' => Input::getTypeName(),

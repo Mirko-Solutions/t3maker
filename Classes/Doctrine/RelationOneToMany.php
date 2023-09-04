@@ -11,8 +11,8 @@
 
 namespace Mirko\T3maker\Doctrine;
 
-use Mirko\T3maker\Utility\StringUtility;
 use RuntimeException;
+use Symfony\Bundle\MakerBundle\Str;
 
 /**
  * @internal
@@ -21,12 +21,12 @@ final class RelationOneToMany extends BaseCollectionRelation
 {
     public function getTargetGetterMethodName(): string
     {
-        return 'get' . StringUtility::asCamelCase($this->getTargetPropertyName());
+        return 'get' . Str::asCamelCase($this->getTargetPropertyName());
     }
 
     public function getTargetSetterMethodName(): string
     {
-        return 'set' . StringUtility::asCamelCase($this->getTargetPropertyName());
+        return 'set' . Str::asCamelCase($this->getTargetPropertyName());
     }
 
     public function isMapInverseRelation(): bool

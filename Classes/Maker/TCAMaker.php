@@ -10,10 +10,10 @@ use Mirko\T3maker\Generator\TCAGenerator;
 use Mirko\T3maker\Parser\ModelParser;
 use Mirko\T3maker\Typo3\TCA\TCAColumnFactory;
 use Mirko\T3maker\Utility\PackageDetails;
-use Mirko\T3maker\Utility\StringUtility;
 use Mirko\T3maker\Utility\TCASourceManipulator;
 use Mirko\T3maker\Utility\Typo3Utility;
 use ReflectionClass;
+use Symfony\Bundle\MakerBundle\Str;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
@@ -69,7 +69,7 @@ class TCAMaker extends AbstractMaker
             }
 
             $newConfig = $this->columnFactory->createColumnConfigForTableColumn(
-                $modelReflection->getProperty(StringUtility::pluralCamelCaseToSingular($columnName)),
+                $modelReflection->getProperty(Str::pluralCamelCaseToSingular($columnName)),
                 $io
             );
 

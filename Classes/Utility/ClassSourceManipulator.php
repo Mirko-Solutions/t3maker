@@ -31,6 +31,8 @@ use PhpParser\NodeVisitor;
 use PhpParser\Parser;
 use ReflectionClass;
 use ReflectionParameter;
+use Symfony\Bundle\MakerBundle\Str;
+use Symfony\Bundle\MakerBundle\Util\ClassNameValue;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 
@@ -171,7 +173,7 @@ final class ClassSourceManipulator
         bool $isReturnTypeNullable,
         array $commentLines = []
     ): void {
-        $methodName = ($returnType === 'bool' ? 'is' : 'get') . StringUtility::asCamelCase($propertyName);
+        $methodName = ($returnType === 'bool' ? 'is' : 'get') . Str::asCamelCase($propertyName);
         $this->addCustomGetter($propertyName, $methodName, $returnType, $isReturnTypeNullable, $commentLines);
     }
 
@@ -273,7 +275,7 @@ final class ClassSourceManipulator
         bool $isNullable,
         array $commentLines = []
     ): Builder\Method {
-        $methodName = 'set' . StringUtility::asCamelCase($propertyName);
+        $methodName = 'set' . Str::asCamelCase($propertyName);
         $setterNodeBuilder = (new Builder\Method($methodName))->makePublic();
 
         if ($commentLines) {
@@ -443,7 +445,7 @@ final class ClassSourceManipulator
      */
     public function addUseStatementIfNecessary(string $class): string
     {
-        $shortClassName = StringUtility::getShortClassName($class);
+        $shortClassName = Str::getShortClassName($class);
         if ($this->isInSameNamespace($class)) {
             return $shortClassName;
         }
@@ -476,7 +478,7 @@ final class ClassSourceManipulator
                 // only set $targetIndex the first time you find it
                 if (
                     $targetIndex === null
-                    && StringUtility::areClassesAlphabetical($class, (string)$stmt->uses[0]->name)
+                    && Str::areClassesAlphabetical($class, (string)$stmt->uses[0]->name)
                 ) {
                     $targetIndex = $index;
                 }
@@ -568,8 +570,8 @@ final class ClassSourceManipulator
         $class = $attributePrefix ? sprintf(
             '%s\\%s',
             $attributePrefix,
-            StringUtility::getShortClassName($attributeClass)
-        ) : StringUtility::getShortClassName($attributeClass);
+            Str::getShortClassName($attributeClass)
+        ) : Str::getShortClassName($attributeClass);
 
         return new Node\Attribute(
             new Node\Name($class),
@@ -726,14 +728,14 @@ final class ClassSourceManipulator
     private function addMethod(Node\Stmt\ClassMethod $methodNode): void
     {
         $classNode = $this->getClassNode();
-        $methodName = $methodNode->name;
+        $methodName_name = $methodNode->name;
         $existingIndex = null;
-        if ($this->methodExists($methodName)) {
+        if ($this->methodExists((string)$methodName_name)) {
             if (!$this->overwrite) {
                 $this->writeNote(
                     sprintf(
                         'Not generating <info>%s::%s()</info>: method already exists',
-                        StringUtility::getShortClassName($this->getThisFullClassName()),
+                        Str::getShortClassName($this->getThisFullClassName()),
                         $methodName
                     )
                 );

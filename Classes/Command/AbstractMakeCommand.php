@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Command;
 
-use JetBrains\PhpStorm\NoReturn;
 use LogicException;
 use Mirko\T3maker\Generator\Generator;
 use Mirko\T3maker\Maker\MakerInterface;
@@ -25,40 +24,31 @@ abstract class AbstractMakeCommand extends Command
 
     protected string $extensionPath = '';
 
-    public function __construct(protected MakerInterface $maker, protected Generator $generator, string $name = null)
-    {
+    public function __construct(
+        protected MakerInterface $maker,
+        protected Generator $generator,
+        string $name = null
+    ) {
         parent::__construct($name);
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function configure(): void
     {
-        $this
-            ->addArgument(
-                'extensionName',
-                InputArgument::REQUIRED,
-                'name for which extension command will be executed'
-            );
+        $this->addArgument(
+            'extensionName',
+            InputArgument::REQUIRED,
+            'Name for which extension command will be executed'
+        );
     }
 
-    #[NoReturn] protected function initialize(InputInterface $input, OutputInterface $output): void
-    {
-        $this->io = new SymfonyStyle($input, $output);
-    }
-
-    protected function interact(InputInterface $input, OutputInterface $output): void
-    {
-        $extensionName = $input->getArgument('extensionName');
-        if ($extensionName) {
-            return;
-        }
-
-        $argument = $this->getDefinition()->getArgument('extensionName');
-        $question = $this->createClassQuestion($argument->getDescription());
-        $extensionName = $this->io->askQuestion($question);
-
-        $input->setArgument('extensionName', $extensionName);
-    }
-
+    /**
+     * @inheritDoc
+     *
+     * @throws LogicException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!Typo3Utility::isExtensionLoaded($input->getArgument('extensionName'))) {
@@ -74,6 +64,31 @@ abstract class AbstractMakeCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function interact(InputInterface $input, OutputInterface $output): void
+    {
+        $extensionName = $input->getArgument('extensionName');
+        if ($extensionName) {
+            return;
+        }
+
+        $argument = $this->getDefinition()->getArgument('extensionName');
+        $question = $this->createClassQuestion($argument->getDescription());
+        $extensionName = $this->io->askQuestion($question);
+
+        $input->setArgument('extensionName', $extensionName);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function initialize(InputInterface $input, OutputInterface $output): void
+    {
+        $this->io = new SymfonyStyle($input, $output);
     }
 
     protected function createClassQuestion(string $questionText): Question

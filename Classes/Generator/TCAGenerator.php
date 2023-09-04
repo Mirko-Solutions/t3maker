@@ -6,8 +6,8 @@ namespace Mirko\T3maker\Generator;
 
 use Mirko\T3maker\Parser\ModelParser;
 use Mirko\T3maker\Utility\PackageDetails;
-use Mirko\T3maker\Utility\StringUtility;
 use ReflectionClass;
+use Symfony\Bundle\MakerBundle\Str;
 use Symfony\Component\VarExporter\VarExporter;
 
 class TCAGenerator
@@ -53,7 +53,7 @@ class TCAGenerator
 
     private function generateTCAFileName($extKey, $modelName): string
     {
-        $modelName = StringUtility::addSuffix(strtolower($modelName), '.php');
+        $modelName = Str::addSuffix(strtolower($modelName), '.php');
         return 'tx_' . $extKey . '_domain_model_' . $modelName;
     }
 }

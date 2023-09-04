@@ -11,7 +11,7 @@
 
 namespace Mirko\T3maker\Doctrine;
 
-use Mirko\T3maker\Utility\StringUtility;
+use Symfony\Bundle\MakerBundle\Str;
 
 /**
  * @internal
@@ -20,11 +20,11 @@ final class RelationOneToOne extends BaseRelation
 {
     public function getTargetGetterMethodName(): string
     {
-        return 'get' . StringUtility::asCamelCase($this->getTargetPropertyName());
+        return 'get' . Str::asCamelCase($this->getTargetPropertyName());
     }
 
     public function getTargetSetterMethodName(): string
     {
-        return 'set' . StringUtility::asCamelCase($this->getTargetPropertyName());
+        return 'set' . Str::asCamelCase($this->getTargetPropertyName());
     }
 }

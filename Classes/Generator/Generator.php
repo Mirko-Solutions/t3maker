@@ -9,10 +9,10 @@ use LogicException;
 use Mirko\T3maker\FileManager;
 use Mirko\T3maker\Utility\ClassDetails;
 use Mirko\T3maker\Utility\PackageDetails;
-use Mirko\T3maker\Utility\StringUtility;
 use Mirko\T3maker\Utility\Typo3Utility;
 use Mirko\T3maker\Validator\ClassValidator;
 use RuntimeException;
+use Symfony\Bundle\MakerBundle\Str;
 
 final class Generator
 {
@@ -35,7 +35,7 @@ final class Generator
             // class is already "absolute" - leave it alone (but strip opening \)
             $className = substr($name, 1);
         } else {
-            $className = rtrim($fullNamespacePrefix, '\\') . '\\' . StringUtility::asClassName($name, $suffix);
+            $className = rtrim($fullNamespacePrefix, '\\') . '\\' . Str::asClassName($name, $suffix);
         }
 
         ClassValidator::validateClassName($className, $validationErrorMessage);
@@ -69,7 +69,7 @@ final class Generator
                     'Could not determine where to locate the new class "%s",
                     maybe try with a full namespace like "\\My\\Full\\Namespace\\%s"',
                     $className,
-                    StringUtility::getShortClassName($className)
+                    Str::getShortClassName($className)
                 )
             );
         }
@@ -77,8 +77,8 @@ final class Generator
         $variables = array_merge(
             $variables,
             [
-                'class_name' => StringUtility::getShortClassName($className),
-                'namespace' => StringUtility::getNamespace($className),
+                'class_name' => Str::getShortClassName($className),
+                'namespace' => Str::getNamespace($className),
             ]
         );
 
