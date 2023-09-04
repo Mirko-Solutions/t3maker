@@ -17,13 +17,13 @@
 		"nikic/php-parser": "^4.11",
 		"symfony/filesystem": "^5.4 || ^6.0",
 		"symfony/finder": "^5.4 || ^6.0",
-		"symfony/property-info": "^6.3",
+		"symfony/property-info": "^5.4 || ^6.3",
 		"symfony/var-exporter": "^5.4 || ^6.0",
 		"typo3/cms-core": "^11.5",
 		"typo3/cms-scheduler": "^11.5"
 	},
 	"require-dev": {
-		"ergebnis/composer-normalize": "^2.35",
+		"ergebnis/composer-normalize": "^2.31",
 		"friendsofphp/php-cs-fixer": "^3.25",
 		"maglnet/composer-require-checker": "^3.8",
 		"overtrue/phplint": "^9.0",
