@@ -23,6 +23,9 @@
     <!-- Code analysis -->
     <rule ref="Generic.CodeAnalysis.AssignmentInCondition"/>
     <rule ref="Generic.CodeAnalysis.EmptyStatement"/>
+    <rule ref="Generic.CodeAnalysis.EmptyStatement.DetectedCatch">
+        <exclude-pattern>.*\.php$</exclude-pattern>
+    </rule>
     <rule ref="Generic.CodeAnalysis.ForLoopShouldBeWhileLoop"/>
     <rule ref="Generic.CodeAnalysis.ForLoopWithTestFunctionCall"/>
     <rule ref="Generic.CodeAnalysis.JumbledIncrementer"/>

@@ -410,6 +410,8 @@ final class ClassSourceManipulator
                         new Node\Expr\StaticCall(new Node\Name('parent'), new Node\Identifier('__construct'))
                     );
                 }
+            } catch (Exception $e) {
+                // do nothing
             }
 
             $this->addNodeAfterProperties($constructorNode);

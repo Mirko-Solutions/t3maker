@@ -1,4 +1,6 @@
 /.idea/
-/vendor/
+/.Build/*
+/vendor
 /.php-cs-fixer.cache
 /composer.lock
+/.phplint.cache/

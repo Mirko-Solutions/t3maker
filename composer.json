@@ -11,7 +11,7 @@
 		"code generator"
 	],
 	"homepage": "https://github.com/Mirko-Solutions/t3maker",
-	"license": "GPL-2.0+",
+	"license": "GPL-2.0-or-later",
 	"require": {
 		"php": ">=8.0.0",
 		"doctrine/annotations": "^1.0",
@@ -25,6 +25,7 @@
 	},
 	"require-dev": {
 		"friendsofphp/php-cs-fixer": "^3.25",
+		"overtrue/phplint": "^9.0",
 		"roave/security-advisories": "dev-latest",
 		"squizlabs/php_codesniffer": "^3.7",
 		"typo3/coding-standards": "^0.7"
@@ -47,18 +48,27 @@
 		"sort-packages": true
 	},
 	"scripts": {
-		"ci:php:cs-fixer": "php-cs-fixer fix -v --dry-run --using-cache no --diff",
+		"ci:php": [
+			"@ci:php:cs",
+			"@ci:php:lint",
+			"@ci:php:sniff"
+		],
+		"ci:php:cs": "php-cs-fixer fix -v --dry-run --using-cache no --diff",
+		"ci:php:lint": "@php phplint --no-progress",
 		"ci:php:sniff": "phpcs Classes Configuration"
 	},
 	"scripts-descriptions": {
-		"ci:php:cs-fixer": "Checks the code style with the PHP Coding Standards Fixer (PHP-CS-Fixer).",
+		"ci:php": "Runs all static checks for the PHP files.",
+		"ci:php:cs": "Checks the code style with the PHP Coding Standards Fixer (PHP-CS-Fixer).",
+		"ci:php:lint": "Lints the PHP files for syntax errors.",
 		"ci:php:sniff": "Checks the code style with PHP_CodeSniffer (PHPCS)."
 	},
 	"extra": {
 		"typo3/cms": {
-			"cms-package-dir": "{$vendor-dir}/typo3/cms",
-			"web-dir": "web",
-			"extension-key": "t3maker"
+			"app-dir": ".Build",
+			"web-dir": ".Build/Web",
+			"extension-key": "t3maker",
+			"cms-package-dir": "{$vendor-dir}/typo3/cms"
 		}
 	}
 }
