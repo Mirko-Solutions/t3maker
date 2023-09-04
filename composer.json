@@ -1,7 +1,7 @@
 {
 	"name": "mirko/t3maker",
 	"description": "TYPO3 Maker helps you create empty commands, controllers, models, and more so you can forget about writing boilerplate code.",
-	"version": "0.0.1",
+	"license": "GPL-2.0-or-later",
 	"type": "typo3-cms-extension",
 	"keywords": [
 		"TYPO3 CMS",
@@ -11,20 +11,21 @@
 		"code generator"
 	],
 	"homepage": "https://github.com/Mirko-Solutions/t3maker",
-	"license": "GPL-2.0-or-later",
 	"require": {
 		"php": ">=8.0.0",
 		"doctrine/annotations": "^1.0",
 		"nikic/php-parser": "^4.11",
-		"symfony/filesystem": "^5.4|^6.0",
-		"symfony/finder": "^5.4|^6.0",
-		"symfony/property-info": "*",
-		"symfony/var-exporter": "^5.4|^6.0",
+		"symfony/filesystem": "^5.4 || ^6.0",
+		"symfony/finder": "^5.4 || ^6.0",
+		"symfony/property-info": "^6.3",
+		"symfony/var-exporter": "^5.4 || ^6.0",
 		"typo3/cms-core": "^11.5",
 		"typo3/cms-scheduler": "^11.5"
 	},
 	"require-dev": {
+		"ergebnis/composer-normalize": "^2.35",
 		"friendsofphp/php-cs-fixer": "^3.25",
+		"maglnet/composer-require-checker": "^3.8",
 		"overtrue/phplint": "^9.0",
 		"roave/security-advisories": "dev-latest",
 		"squizlabs/php_codesniffer": "^3.7",
@@ -43,11 +44,30 @@
 	"config": {
 		"allow-plugins": {
 			"typo3/class-alias-loader": true,
-			"typo3/cms-composer-installers": true
+			"typo3/cms-composer-installers": true,
+			"ergebnis/composer-normalize": true
 		},
 		"sort-packages": true
 	},
+	"extra": {
+		"typo3/cms": {
+			"app-dir": ".Build",
+			"cms-package-dir": "{$vendor-dir}/typo3/cms",
+			"extension-key": "t3maker",
+			"web-dir": ".Build/Web"
+		}
+	},
 	"scripts": {
+		"ci": [
+			"@ci:composer",
+			"@ci:php"
+		],
+		"ci:composer": [
+			"@ci:composer:normalize",
+			"@ci:composer:validate"
+		],
+		"ci:composer:normalize": "@composer normalize --dry-run",
+		"ci:composer:validate": "@composer validate",
 		"ci:php": [
 			"@ci:php:cs",
 			"@ci:php:lint",
@@ -58,17 +78,13 @@
 		"ci:php:sniff": "phpcs Classes Configuration"
 	},
 	"scripts-descriptions": {
+		"ci": "Runs all dynamic and static code checks.",
+		"ci:composer": "Runs all static checks for composer.json file.",
+		"ci:composer:normalize": "Normalize the composer.json file.",
+		"ci:composer:validate": "Validate the composer.json file.",
 		"ci:php": "Runs all static checks for the PHP files.",
 		"ci:php:cs": "Checks the code style with the PHP Coding Standards Fixer (PHP-CS-Fixer).",
 		"ci:php:lint": "Lints the PHP files for syntax errors.",
 		"ci:php:sniff": "Checks the code style with PHP_CodeSniffer (PHPCS)."
-	},
-	"extra": {
-		"typo3/cms": {
-			"app-dir": ".Build",
-			"web-dir": ".Build/Web",
-			"extension-key": "t3maker",
-			"cms-package-dir": "{$vendor-dir}/typo3/cms"
-		}
 	}
 }

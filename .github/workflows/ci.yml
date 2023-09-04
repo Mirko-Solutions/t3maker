@@ -9,28 +9,64 @@ permissions:
   contents: read
 
 jobs:
-  code-quality:
-    name: Code quality checks
+  validation:
+    name: Composer validation
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: latest
+          coverage: none
+          tools: composer
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.composer-cache-vars.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer i  -n --prefer-dist --no-progress --ansi
+
+      - name: Validate composer.json
+        run: composer ci:composer:validate
+
+      - name: Normalize composer.json
+        run: composer ci:composer:normalize
+
+  code-quality:
+    name: Code quality checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           coverage: none
           tools: composer:v2.5
+
       - name: Cache dependencies installed with composer
         uses: actions/cache@v3
         with:
           key: php${{ matrix.php }}-composer-${{ hashFiles('**/composer.json') }}
           path: ~/.cache/composer
           restore-keys: php${{ matrix.php }}-composer-\n
+
       - name: Install Composer dependencies
         run: composer i -n --no-progress --ansi
       - name: Run command
         run: composer ci:${{ matrix.command }}
+
     strategy:
       fail-fast: false
       matrix:
