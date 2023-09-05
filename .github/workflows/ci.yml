@@ -51,9 +51,13 @@ jobs:
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v39
+        with:
+          files: |
+            Classes
 
       - name: Install PHP
         uses: shivammathur/setup-php@v2
+        if: steps.changed-files.outputs.any_changed == 'true'
         with:
           php-version: ${{ matrix.php }}
           coverage: none
@@ -61,12 +65,14 @@ jobs:
 
       - name: Cache dependencies installed with composer
         uses: actions/cache@v3
+        if: steps.changed-files.outputs.any_changed == 'true'
         with:
           key: php${{ matrix.php }}-composer-${{ hashFiles('**/composer.json') }}
           path: ~/.cache/composer
           restore-keys: php${{ matrix.php }}-composer-\n
 
       - name: Install Composer dependencies
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: composer i -n --no-progress --ansi
 
       - name: Run command
