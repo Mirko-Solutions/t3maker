@@ -77,7 +77,7 @@ jobs:
 
       - name: Run command
         if: steps.changed-files.outputs.any_changed == 'true'
-        run: composer ci:${{ matrix.command }} {{ steps.changed-files.outputs.all_changed_files }}
+        run: composer ci:${{ matrix.command }} '{{ steps.changed-files.outputs.all_changed_files }}'
 
     strategy:
       fail-fast: false
