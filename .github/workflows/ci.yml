@@ -1,8 +1,8 @@
-name: CI with Composer scripts
+name: CI
 on:
   push:
     branches:
-      - main
+      - feature/changed-files-ci
   pull_request:
 
 permissions:
@@ -48,6 +48,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v39
+
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -64,8 +68,10 @@ jobs:
 
       - name: Install Composer dependencies
         run: composer i -n --no-progress --ansi
+
       - name: Run command
-        run: composer ci:${{ matrix.command }}
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: composer ci:${{ matrix.command }} {{ steps.changed-files.outputs.all_changed_files }}
 
     strategy:
       fail-fast: false

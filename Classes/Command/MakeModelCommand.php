@@ -25,8 +25,7 @@ final class MakeModelCommand extends AbstractMakeCommand
     {
         parent::configure();
         $this->addArgument(
-            'name',
-            InputArgument::OPTIONAL,
+            'name', InputArgument::OPTIONAL,
             sprintf(
                 'Class name of the entity to create or update (e.g. <fg=yellow>%s</>)',
                 Str::asClassName(Str::getRandomTerm())

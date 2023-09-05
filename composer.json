@@ -74,7 +74,7 @@
 			"@ci:php:lint",
 			"@ci:php:sniff"
 		],
-		"ci:php:cs": "php-cs-fixer fix -v --dry-run --using-cache no --diff",
+		"ci:php:cs": "php-cs-fixer fix -v --dry-run --using-cache no --diff --config .php-cs-fixer.dist.php",
 		"ci:php:lint": "@php phplint --no-progress",
 		"ci:php:sniff": "phpcs Classes Configuration"
 	},
