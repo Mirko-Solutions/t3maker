@@ -15,10 +15,6 @@ services:
     exclude: [ '../Classes/Tca/*', '../Classes/Doctrine/*' ]
   Mirko\T3maker\Generator\UseStatementGenerator:
     autowire: false
-  Mirko\T3maker\Utility\ClassNameDetails:
-    autowire: false
-  Mirko\T3maker\Utility\ClassNameValue:
-    autowire: false
   Mirko\T3maker\Utility\ClassDetails:
     autowire: false
   Mirko\T3maker\Utility\ClassSourceManipulator:

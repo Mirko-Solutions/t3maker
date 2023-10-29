@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Command;
 
-use JetBrains\PhpStorm\NoReturn;
+use LogicException;
 use Mirko\T3maker\Generator\Generator;
 use Mirko\T3maker\Maker\MakerInterface;
 use Mirko\T3maker\Utility\Typo3Utility;
@@ -24,26 +24,51 @@ abstract class AbstractMakeCommand extends Command
 
     protected string $extensionPath = '';
 
-    public function __construct(protected MakerInterface $maker, protected Generator $generator, string $name = null)
-    {
+    public function __construct(
+        protected MakerInterface $maker,
+        protected Generator $generator,
+        string $name = null
+    ) {
         parent::__construct($name);
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function configure(): void
     {
-        $this
-            ->addArgument(
-                'extensionName',
-                InputArgument::REQUIRED,
-                'name for which extension command will be executed'
-            );
+        $this->addArgument(
+            'extensionName',
+            InputArgument::REQUIRED,
+            'Name for which extension command will be executed'
+        );
     }
 
-    #[NoReturn] protected function initialize(InputInterface $input, OutputInterface $output): void
+    /**
+     * @inheritDoc
+     *
+     * @throws LogicException
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->io = new SymfonyStyle($input, $output);
+        if (!Typo3Utility::isExtensionLoaded($input->getArgument('extensionName'))) {
+            $extensionName = $input->getArgument('extensionName');
+            $this->io->error('Extension key ' . $extensionName . ' is not loaded!');
+            return Command::FAILURE;
+        }
+
+        $this->maker->generate($input, $this->io, $this->generator);
+
+        if ($this->generator->hasPendingOperations()) {
+            throw new LogicException('Make sure to call the writeChanges() method on the generator.');
+        }
+
+        return Command::SUCCESS;
     }
 
+    /**
+     * @inheritDoc
+     */
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
         $extensionName = $input->getArgument('extensionName');
@@ -58,23 +83,12 @@ abstract class AbstractMakeCommand extends Command
         $input->setArgument('extensionName', $extensionName);
     }
 
-    protected function execute(
-        InputInterface $input,
-        OutputInterface $output
-    ): int {
-
-        if (!Typo3Utility::isExtensionLoaded($input->getArgument('extensionName'))) {
-            $this->io->error("Extension key  {$input->getArgument('extensionName')}  is not loaded!");
-            return Command::FAILURE;
-        }
-
-        $this->maker->generate($input, $this->io, $this->generator);
-
-        if ($this->generator->hasPendingOperations()) {
-            throw new \LogicException('Make sure to call the writeChanges() method on the generator.');
-        }
-
-        return Command::SUCCESS;
+    /**
+     * @inheritDoc
+     */
+    protected function initialize(InputInterface $input, OutputInterface $output): void
+    {
+        $this->io = new SymfonyStyle($input, $output);
     }
 
     protected function createClassQuestion(string $questionText): Question

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Typo3\TCA;
 
 use Mirko\T3maker\Typo3\TCA\Config\RenderType\ConfigRenderTypeInterface;
@@ -48,6 +47,7 @@ class TCAConfigProvider
 
     /**
      * @param ReflectionNamedType $namedType
+     *
      * @return array
      */
     public function getAvailableConfigTypesForPropertyType(ReflectionNamedType $namedType): array
@@ -68,6 +68,7 @@ class TCAConfigProvider
 
     /**
      * @param ConfigTypeInterface $configType
+     *
      * @return array
      */
     public function getAvailableConfigRenderTypesForConfigType(ConfigTypeInterface $configType): array
@@ -84,6 +85,7 @@ class TCAConfigProvider
 
     /**
      * @param string $typeName
+     *
      * @return ConfigTypeInterface
      */
     public function getConfigTypeByName(string $typeName): ConfigTypeInterface
@@ -97,6 +99,7 @@ class TCAConfigProvider
 
     /**
      * @param string $renderTypeName
+     *
      * @return ConfigRenderTypeInterface|null
      */
     public function getConfigRenderTypeByName(

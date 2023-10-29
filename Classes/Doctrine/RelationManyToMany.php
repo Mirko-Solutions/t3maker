@@ -11,7 +11,7 @@
 
 namespace Mirko\T3maker\Doctrine;
 
-use Mirko\T3maker\Utility\StringUtility;
+use Symfony\Bundle\MakerBundle\Str;
 
 /**
  * @internal
@@ -20,15 +20,15 @@ final class RelationManyToMany extends BaseCollectionRelation
 {
     public function getTargetSetterMethodName(): string
     {
-        return 'add' . StringUtility::asCamelCase(
-                StringUtility::pluralCamelCaseToSingular($this->getTargetPropertyName())
-            );
+        return 'add' . Str::asCamelCase(
+            Str::pluralCamelCaseToSingular($this->getTargetPropertyName())
+        );
     }
 
     public function getTargetRemoverMethodName(): string
     {
-        return 'remove' . StringUtility::asCamelCase(
-                StringUtility::pluralCamelCaseToSingular($this->getTargetPropertyName())
-            );
+        return 'remove' . Str::asCamelCase(
+            Str::pluralCamelCaseToSingular($this->getTargetPropertyName())
+        );
     }
 }

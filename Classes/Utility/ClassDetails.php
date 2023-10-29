@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mirko\T3maker\Utility;
 
+use Symfony\Bundle\MakerBundle\Str;
+
 class ClassDetails
 {
     public function __construct(
@@ -21,7 +23,7 @@ class ClassDetails
 
     public function getShortName(): string
     {
-        return StringUtility::getShortClassName($this->fullClassName);
+        return Str::getShortClassName($this->fullClassName);
     }
 
     /**
@@ -38,6 +40,6 @@ class ClassDetails
 
     public function getRelativeNameWithoutSuffix(): string
     {
-        return StringUtility::removeSuffix($this->getRelativeName(), $this->suffix);
+        return Str::removeSuffix($this->getRelativeName(), $this->suffix);
     }
 }

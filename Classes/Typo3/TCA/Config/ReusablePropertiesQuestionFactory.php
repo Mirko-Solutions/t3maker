@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Typo3\TCA\Config;
 
-use Mirko\T3maker\Utility\StringUtility;
+use InvalidArgumentException;
+use RuntimeException;
+use Symfony\Bundle\MakerBundle\Str;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -42,21 +43,24 @@ class ReusablePropertiesQuestionFactory
     private string $property = '';
 
     /**
-     * @param string $property
+     * @param string       $property
      * @param SymfonyStyle $io
-     * @param array $additionalArg
+     * @param array        $additionalArg
+     *
+     * @throws RuntimeException
+     *
      * @return mixed
      */
     public function askQuestionForProperty(string $property, SymfonyStyle $io, array $additionalArg = []): mixed
     {
         $this->property = $property;
 
-        $propertyCarmelCase = StringUtility::asCamelCase($property);
+        $propertyCarmelCase = Str::asCamelCase($property);
 
-        $method = "askQuestionFor{$propertyCarmelCase}Property";
+        $method = 'askQuestionFor' . $propertyCarmelCase . 'Property';
 
         if (!method_exists($this, $method)) {
-            throw new \RuntimeException("creation method no found for property {$property}");
+            throw new RuntimeException('creation method no found for property ' . $property);
         }
 
         return $this->{$method}($io, $additionalArg);
@@ -64,25 +68,22 @@ class ReusablePropertiesQuestionFactory
 
     /**
      * @param SymfonyStyle $io
+     *
      * @return int
      */
     private function askQuestionForSizeProperty(SymfonyStyle $io, array $additionalArg): int
     {
         $question = $this->createNumberQuestion();
 
-        $question->setNormalizer(
-            function ($value) {
-                return (int)$value;
-            }
-        );
+        $question->setNormalizer(fn ($value) => (int)$value);
         $question->setValidator(
             function ($value) {
-                if ('' === trim($value)) {
-                    throw new \RuntimeException('The size cannot be empty');
+                if (trim($value) === '') {
+                    throw new RuntimeException('The size cannot be empty');
                 }
 
                 if (!is_int($value)) {
-                    throw new \RuntimeException('The size must be int');
+                    throw new RuntimeException('The size must be int');
                 }
 
                 return (int)$value;
@@ -94,6 +95,7 @@ class ReusablePropertiesQuestionFactory
 
     /**
      * @param SymfonyStyle $io
+     *
      * @return string
      */
     private function askQuestionForReadOnlyProperty(SymfonyStyle $io, array $additionalArg): mixed
@@ -103,7 +105,8 @@ class ReusablePropertiesQuestionFactory
 
     /**
      * @param SymfonyStyle $io
-     * @param mixed ...$arg
+     * @param mixed        ...$arg
+     *
      * @return string
      */
     private function askQuestionForEvalProperty(SymfonyStyle $io, array $additionalArg): string
@@ -126,8 +129,8 @@ class ReusablePropertiesQuestionFactory
                     }
 
                     $values = implode(',', $validation);
-                    throw new \RuntimeException(
-                        "for selected field needs '{$this->property}' set to either to {$values}"
+                    throw new RuntimeException(
+                        'for selected field needs ' . $this->property . ' set to either to ' . $values
                     );
                 }
             );
@@ -138,7 +141,8 @@ class ReusablePropertiesQuestionFactory
 
     /**
      * @param SymfonyStyle $io
-     * @param mixed ...$arg
+     * @param mixed        ...$arg
+     *
      * @return mixed
      */
     private function askQuestionForPlaceholderProperty(SymfonyStyle $io, array $additionalArg): string
@@ -150,6 +154,7 @@ class ReusablePropertiesQuestionFactory
 
     /**
      * @param SymfonyStyle $io
+     *
      * @return string
      */
     private function askQuestionForDefaultProperty(SymfonyStyle $io, array $additionalArg): string
@@ -161,6 +166,7 @@ class ReusablePropertiesQuestionFactory
 
     /**
      * @param SymfonyStyle $io
+     *
      * @return mixed
      */
     private function askQuestionForAutocompleteProperty(SymfonyStyle $io, array $additionalArg): mixed
@@ -170,7 +176,8 @@ class ReusablePropertiesQuestionFactory
 
     /**
      * @param SymfonyStyle $io
-     * @param array $additionalArg
+     * @param array        $additionalArg
+     *
      * @return array
      */
     private function askQuestionForValuePickerProperty(SymfonyStyle $io, array $additionalArg): array
@@ -192,7 +199,7 @@ class ReusablePropertiesQuestionFactory
                     }
 
                     if (\in_array($name, $items, true)) {
-                        throw new \InvalidArgumentException(sprintf('The "%s" key already exists.', $name));
+                        throw new InvalidArgumentException(sprintf('The "%s" key already exists.', $name));
                     }
 
                     return $name;
@@ -204,11 +211,9 @@ class ReusablePropertiesQuestionFactory
             }
 
             $itemValue = $io->ask(
-                "Enter value for {$itemKey}",
+                'Enter value for ' . $itemKey,
                 null,
-                function ($name) {
-                    return $name;
-                }
+                fn ($name) => $name
             );
 
             $items[] = [$itemValue, $itemKey];
@@ -336,9 +341,10 @@ class ReusablePropertiesQuestionFactory
 
     /**
      * @param $message
+     *
      * @return ChoiceQuestion
      */
-    private function createBoolQuestion($message = null,): ChoiceQuestion
+    private function createBoolQuestion($message = null): ChoiceQuestion
     {
         $choices = ['0', '1'];
 
@@ -353,9 +359,7 @@ class ReusablePropertiesQuestionFactory
         );
 
         $question->setNormalizer(
-            static function ($value) use ($choices) {
-                return array_key_exists($value, $choices) ? $choices[$value] : $value;
-            }
+            static fn ($value) => array_key_exists($value, $choices) ? $choices[$value] : $value
         );
 
         return $question;
@@ -363,6 +367,7 @@ class ReusablePropertiesQuestionFactory
 
     /**
      * @param $message
+     *
      * @return Question
      */
     private function createTextQuestion($message = null, iterable $autocompleterValues = null): Question
@@ -374,9 +379,7 @@ class ReusablePropertiesQuestionFactory
         $question = new Question($message);
         $question->setAutocompleterValues($autocompleterValues);
         $question->setNormalizer(
-            function ($value) {
-                return (string)$value;
-            }
+            fn ($value) => (string)$value
         );
 
         return $question;
@@ -384,6 +387,7 @@ class ReusablePropertiesQuestionFactory
 
     /**
      * @param $message
+     *
      * @return Question
      */
     private function createNumberQuestion($message = null): Question
@@ -400,15 +404,11 @@ class ReusablePropertiesQuestionFactory
                     return $value;
                 }
 
-                throw new \RuntimeException('Only number allowed');
+                throw new RuntimeException('Only number allowed');
             }
         );
 
-        $question->setNormalizer(
-            function ($value) {
-                return (int)$value;
-            }
-        );
+        $question->setNormalizer(fn ($value) => (int)$value);
 
         return $question;
     }

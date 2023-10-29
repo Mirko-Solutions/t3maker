@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Typo3\TCA;
 
 use Mirko\T3maker\Parser\ModelParser;
 use Mirko\T3maker\Typo3\TCA\Config\RenderType\ConfigRenderTypeInterface;
 use Mirko\T3maker\Typo3\TCA\Config\RenderType\DefaultRenderTypeInterface;
 use Mirko\T3maker\Typo3\TCA\Config\Type\ConfigTypeInterface;
+use ReflectionNamedType;
+use ReflectionProperty;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -20,7 +21,7 @@ class TCAColumnFactory
     {
     }
 
-    public function createColumnConfigForTableColumn(\ReflectionProperty $property, SymfonyStyle $io): array
+    public function createColumnConfigForTableColumn(ReflectionProperty $property, SymfonyStyle $io): array
     {
         $this->io = $io;
 
@@ -52,7 +53,8 @@ class TCAColumnFactory
     }
 
     /**
-     * @param array<\ReflectionNamedType> $propertyTypes
+     * @param array<ReflectionNamedType> $propertyTypes
+     *
      * @return ConfigTypeInterface
      */
     private function askConfigurationForPropertyType(array $propertyTypes): ConfigTypeInterface
@@ -70,7 +72,8 @@ class TCAColumnFactory
                     $typeVariants
                 );
             }
-            $message = "available config types for property with builtin type {$propertyTypeNames} please select one";
+            $message = 'available config types for property with builtin type '
+                . $propertyTypeNames . ' please select one';
         }
 
         if (empty($typeVariants)) {
@@ -123,7 +126,7 @@ class TCAColumnFactory
         }
 
         $question = new ChoiceQuestion(
-            "available config render types for config type '{$configType->getTypeName()}', please select one",
+            'available config render types for config type ' . $configType->getTypeName() . ', please select one',
             $choices,
             null
         );

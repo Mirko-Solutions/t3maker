@@ -11,7 +11,7 @@
 
 namespace Mirko\T3maker\Doctrine;
 
-use Mirko\T3maker\Utility\StringUtility;
+use Symfony\Bundle\MakerBundle\Str;
 
 /**
  * @internal
@@ -22,11 +22,13 @@ abstract class BaseCollectionRelation extends BaseRelation
 
     public function getAdderMethodName(): string
     {
-        return 'add' . StringUtility::asCamelCase(StringUtility::pluralCamelCaseToSingular($this->getPropertyName()));
+        return 'add' . Str::asCamelCase(Str::pluralCamelCaseToSingular($this->getPropertyName()));
     }
 
     public function getRemoverMethodName(): string
     {
-        return 'remove' . StringUtility::asCamelCase(StringUtility::pluralCamelCaseToSingular($this->getPropertyName()));
+        return 'remove' . Str::asCamelCase(
+            Str::pluralCamelCaseToSingular($this->getPropertyName())
+        );
     }
 }

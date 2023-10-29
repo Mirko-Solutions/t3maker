@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Typo3\TCA\Config\RenderType;
 
 use Mirko\T3maker\Typo3\TCA\Config\ReusablePropertiesQuestionFactory;
-use Mirko\T3maker\Utility\StringUtility;
+use ReflectionProperty;
+use Symfony\Bundle\MakerBundle\Str;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -28,7 +28,7 @@ class InlineDefault extends AbstractConfigRenderType implements DefaultRenderTyp
 
     ];
 
-    public function askForConfigPresets(SymfonyStyle $io, \ReflectionProperty $property): array
+    public function askForConfigPresets(SymfonyStyle $io, ReflectionProperty $property): array
     {
         $question = new ConfirmationQuestion('Do you want to apply File Abstraction Layer (FAL) TCA preset?', false);
         $answer = $io->askQuestion($question);
@@ -38,10 +38,10 @@ class InlineDefault extends AbstractConfigRenderType implements DefaultRenderTyp
         }
 
         return \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::getFileFieldTCAConfig(
-            StringUtility::asSnakeCase($property->getName()),
+            Str::asSnakeCase($property->getName()),
             [
                 'appearance' => [
-                    'createNewRelationLinkTitle' => 'LLL:EXT:cms/locallang_ttc.xlf:images.addFileReference'
+                    'createNewRelationLinkTitle' => 'LLL:EXT:cms/locallang_ttc.xlf:images.addFileReference',
                 ],
                 // custom configuration for displaying fields in the overlay/reference table
                 // to use the image overlay palette instead of the basic overlay palette
@@ -49,13 +49,15 @@ class InlineDefault extends AbstractConfigRenderType implements DefaultRenderTyp
                     'types' => [
                         '0' => [
                             'showitem' => '
-                            --palette--;LLL:EXT:lang/locallang_tca.xlf:sys_file_reference.imageoverlayPalette;imageoverlayPalette,
-                            --palette--;;filePalette'
+                            --palette--;
+                            LLL:EXT:lang/locallang_tca.xlf:sys_file_reference.imageoverlayPalette;imageoverlayPalette,
+                            --palette--;;filePalette',
                         ],
                         \TYPO3\CMS\Core\Resource\File::FILETYPE_TEXT => [
                             'showitem' => '
-                            --palette--;LLL:EXT:lang/locallang_tca.xlf:sys_file_reference.imageoverlayPalette;imageoverlayPalette,
-                            --palette--;;filePalette'
+                            --palette--;
+                            LLL:EXT:lang/locallang_tca.xlf:sys_file_reference.imageoverlayPalette;imageoverlayPalette,
+                            --palette--;;filePalette',
                         ],
                     ],
                 ],

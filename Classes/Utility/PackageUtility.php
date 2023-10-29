@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Utility;
 
+use ReflectionClass;
+use Symfony\Bundle\MakerBundle\Str;
 use Symfony\Component\Finder\Finder;
 use TYPO3\CMS\Core\Package\Package;
 use TYPO3\CMS\Core\Package\PackageManager;
@@ -22,7 +23,7 @@ class PackageUtility
         $namespaces = AutoloadUtility::getPackageNamespace($package);
         $classes = [];
         foreach ($namespaces as $namespace => $path) {
-            $searchPath = $package->getPackagePath() . $path . StringUtility::asFilePath($directNamespace);
+            $searchPath = $package->getPackagePath() . $path . Str::asFilePath($directNamespace);
             if (!is_dir($searchPath)) {
                 continue;
             }
@@ -30,15 +31,15 @@ class PackageUtility
             $files = $finder->in($searchPath)->files()->name('*.php');
 
             foreach ($files as $file) {
-                $reflectClassName = $namespace . $directNamespace . '\\' . StringUtility::removeSuffix(
-                        $file->getFilename(),
-                        '.php'
-                    );
+                $reflectClassName = $namespace . $directNamespace . '\\' . Str::removeSuffix(
+                    $file->getFilename(),
+                    '.php'
+                );
                 if (!class_exists($reflectClassName)) {
                     continue;
                 }
 
-                $class = new \ReflectionClass($reflectClassName);
+                $class = new ReflectionClass($reflectClassName);
 
                 if ($class->isAbstract() || $class->isInterface() || $class->isTrait()) {
                     continue;

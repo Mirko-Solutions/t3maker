@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mirko\T3maker\Utility;
 
 use Mirko\T3maker\Validator\ClassValidator;
+use RuntimeException;
+use Symfony\Bundle\MakerBundle\Str;
 
 final class Validator
 {
@@ -10,7 +14,7 @@ final class Validator
     {
         // remove potential opening slash so we don't match on it
         $pieces = explode('\\', ltrim($className, '\\'));
-        $shortClassName = StringUtility::getShortClassName($className);
+        $shortClassName = Str::getShortClassName($className);
 
         $reservedKeywords = ClassValidator::RESERVED_WORDS;
 
@@ -18,20 +22,21 @@ final class Validator
             if (!mb_check_encoding($piece, 'UTF-8')) {
                 $errorMessage = $errorMessage ?: sprintf('"%s" is not a UTF-8-encoded string.', $piece);
 
-                throw new \RuntimeException($errorMessage);
+                throw new RuntimeException($errorMessage);
             }
 
             if (!preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $piece)) {
                 $errorMessage = $errorMessage ?: sprintf(
-                    '"%s" is not valid as a PHP class name (it must start with a letter or underscore, followed by any number of letters, numbers, or underscores)',
+                    '"%s" is not valid as a PHP class name (it must start with a letter or underscore,
+                    followed by any number of letters, numbers, or underscores)',
                     $className
                 );
 
-                throw new \RuntimeException($errorMessage);
+                throw new RuntimeException($errorMessage);
             }
 
             if (\in_array(strtolower($shortClassName), $reservedKeywords, true)) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     sprintf('"%s" is a reserved keyword and thus cannot be used as class name in PHP.', $shortClassName)
                 );
             }
@@ -51,7 +56,7 @@ final class Validator
                 $className
             );
 
-            throw new \RuntimeException($errorMessage);
+            throw new RuntimeException($errorMessage);
         }
 
         return $className;
@@ -62,7 +67,7 @@ final class Validator
         self::notBlank($className);
 
         if (empty($entities)) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 'There are no registered entities; please create an entity before using this command.'
             );
         }
@@ -75,7 +80,7 @@ final class Validator
         }
 
         if (!\in_array($className, $entities, true)) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 sprintf('Entity "%s" doesn\'t exist; please enter an existing one or create a new one.', $className)
             );
         }
@@ -85,8 +90,8 @@ final class Validator
 
     public static function notBlank(string $value = null): string
     {
-        if (null === $value || '' === $value) {
-            throw new \RuntimeException('This value cannot be blank.');
+        if ($value === null || $value === '') {
+            throw new RuntimeException('This value cannot be blank.');
         }
 
         return $value;

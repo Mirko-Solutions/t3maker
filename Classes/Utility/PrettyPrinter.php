@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Utility;
 
 use PhpParser\Node\Stmt\ClassMethod;
@@ -30,7 +29,7 @@ final class PrettyPrinter extends Standard
      */
     protected function setIndentLevel(int $level): void
     {
-        if (1 === $level) {
+        if ($level === 1) {
             $level = 4;
         }
 
@@ -46,7 +45,7 @@ final class PrettyPrinter extends Standard
      * After
      *      public function getFoo(): string
      */
-    protected function pStmt_ClassMethod(ClassMethod $node)
+    protected function PStmtClassMethod(ClassMethod $node)
     {
         $classMethod = parent::pStmt_ClassMethod($node);
 

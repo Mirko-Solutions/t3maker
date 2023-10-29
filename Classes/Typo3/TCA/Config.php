@@ -9,7 +9,6 @@ use Mirko\T3maker\Typo3\TCA\Config\Type\ConfigTypeInterface;
 
 class Config
 {
-
     private ConfigTypeInterface $type;
 
     private ConfigRenderTypeInterface|null $renderType = null;
@@ -23,7 +22,7 @@ class Config
     public function __toArray(): array
     {
         $config = [
-            'type' => $this->type::getTypeName()
+            'type' => $this->type::getTypeName(),
         ];
 
         if ($this->renderType) {

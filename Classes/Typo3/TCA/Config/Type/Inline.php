@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Typo3\TCA\Config\Type;
 
 use Mirko\T3maker\Typo3\TCA\Config\RenderType\InlineDefault;
@@ -21,7 +20,5 @@ class Inline extends AbstractConfigType
         Type::BUILTIN_TYPE_NULL,
     ];
 
-    public const POSSIBLE_RENDER_TYPES = [
-        InlineDefault::class
-    ];
+    public const POSSIBLE_RENDER_TYPES = [InlineDefault::class];
 }

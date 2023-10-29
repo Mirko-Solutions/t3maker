@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the Symfony MakerBundle package.
  *
@@ -11,7 +13,13 @@
 
 namespace Mirko\T3maker\Doctrine;
 
+use DateInterval;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
+use ReflectionClass;
+
 /**
  * @author Fabien Potencier <fabien@symfony.com>
  * @author Ryan Weaver <ryan@knpuniversity.com>
@@ -23,19 +31,18 @@ final class DoctrineHelper
 {
     /**
      * Determines if the property-type will make the column type redundant.
-     *
      */
     public static function canColumnTypeBeInferredByPropertyType(string $columnType, string $propertyType): bool
     {
         return match ($propertyType) {
-            '\\'.\DateInterval::class => Types::DATEINTERVAL === $columnType,
-            '\\'.\DateTime::class => Types::DATETIME_MUTABLE === $columnType,
-            '\\'.\DateTimeImmutable::class => Types::DATETIME_IMMUTABLE === $columnType,
-            'array' => Types::JSON === $columnType,
-            'bool' => Types::BOOLEAN === $columnType,
-            'float' => Types::FLOAT === $columnType,
-            'int' => Types::INTEGER === $columnType,
-            'string' => Types::STRING === $columnType,
+            '\\' . DateInterval::class => $columnType === Types::DATEINTERVAL,
+            '\\' . DateTime::class => $columnType === Types::DATETIME_MUTABLE,
+            '\\' . DateTimeImmutable::class => $columnType === Types::DATETIME_IMMUTABLE,
+            'array' => $columnType === Types::JSON,
+            'bool' => $columnType === Types::BOOLEAN,
+            'float' => $columnType === Types::FLOAT,
+            'int' => $columnType === Types::INTEGER,
+            'string' => $columnType === Types::STRING,
             default => false,
         };
     }
@@ -48,9 +55,11 @@ final class DoctrineHelper
             Types::BOOLEAN => 'bool',
             Types::INTEGER, Types::SMALLINT => 'int',
             Types::FLOAT => 'float',
-            Types::DATETIME_MUTABLE, Types::DATETIMETZ_MUTABLE, Types::DATE_MUTABLE, Types::TIME_MUTABLE => '\\'.\DateTimeInterface::class,
-            Types::DATETIME_IMMUTABLE, Types::DATETIMETZ_IMMUTABLE, Types::DATE_IMMUTABLE, Types::TIME_IMMUTABLE => '\\'.\DateTimeImmutable::class,
-            Types::DATEINTERVAL => '\\'.\DateInterval::class,
+            Types::DATETIME_MUTABLE, Types::DATETIMETZ_MUTABLE,
+            Types::DATE_MUTABLE, Types::TIME_MUTABLE => '\\' . DateTimeInterface::class,
+            Types::DATETIME_IMMUTABLE, Types::DATETIMETZ_IMMUTABLE,
+            Types::DATE_IMMUTABLE, Types::TIME_IMMUTABLE => '\\' . DateTimeImmutable::class,
+            Types::DATEINTERVAL => '\\' . DateInterval::class,
             Types::OBJECT => 'object',
             default => null,
         };
@@ -64,7 +73,7 @@ final class DoctrineHelper
      */
     public static function getTypeConstant(string $columnType): ?string
     {
-        $reflection = new \ReflectionClass(Types::class);
+        $reflection = new ReflectionClass(Types::class);
         $constants = array_flip($reflection->getConstants());
 
         if (!isset($constants[$columnType])) {

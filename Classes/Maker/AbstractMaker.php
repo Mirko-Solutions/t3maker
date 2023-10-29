@@ -6,6 +6,7 @@ namespace Mirko\T3maker\Maker;
 
 use Mirko\T3maker\Utility\PackageDetails;
 use Mirko\T3maker\Validator\ClassValidator;
+use ReflectionClass;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
@@ -14,15 +15,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 abstract class AbstractMaker implements MakerInterface
 {
     /**
-     * @param SymfonyStyle $io
-     * @return void
+     * Writes a success message.
      */
     protected function writeSuccessMessage(SymfonyStyle $io): void
     {
-        $io->newLine();
-        $io->writeln(' <bg=green;fg=white>          </>');
         $io->writeln(' <bg=green;fg=white> Success! </>');
-        $io->writeln(' <bg=green;fg=white>          </>');
         $io->newLine();
     }
 
@@ -31,8 +28,8 @@ abstract class AbstractMaker implements MakerInterface
         if (count($package->getComposerNamespaces()) === 1) {
             $namespace = array_key_first($package->getComposerNamespaces());
 
-            $io->writeln("`{$namespace}` namespace will be used");
-            //TODO logic when answer is false
+            $io->writeln('`' . $namespace . '` namespace will be used');
+            // TODO: Logic when answer is false.
             $package->setNamespace($namespace);
             return;
         }
@@ -51,9 +48,7 @@ abstract class AbstractMaker implements MakerInterface
         );
         $question->setValidator([ClassValidator::class, 'notEmpty']);
         $question->setNormalizer(
-            function ($value) use ($composerNamespaces) {
-                return array_key_exists($value, $composerNamespaces) ? $composerNamespaces[$value] : $value;
-            }
+            fn ($value) => array_key_exists($value, $composerNamespaces) ? $composerNamespaces[$value] : $value
         );
         $answer = $io->askQuestion($question);
 
@@ -76,6 +71,6 @@ abstract class AbstractMaker implements MakerInterface
 
     protected function getPathOfClass(string $class): string
     {
-        return (new \ReflectionClass($class))->getFileName();
+        return (new ReflectionClass($class))->getFileName();
     }
 }

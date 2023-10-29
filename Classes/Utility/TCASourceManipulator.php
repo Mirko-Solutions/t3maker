@@ -2,16 +2,8 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Utility;
 
-use PhpParser\Parser;
-use PhpParser\Builder;
-use PhpParser\BuilderHelpers;
-use PhpParser\Lexer;
-use PhpParser\Node;
-use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitor;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\VarExporter\VarExporter;
 
@@ -40,7 +32,6 @@ class TCASourceManipulator
 
     public function getSourceCode(): string
     {
-
         return '<?php return ' . VarExporter::export($this->tcaConfiguration) . ';';
     }
 
@@ -81,7 +72,7 @@ class TCASourceManipulator
         foreach ($source as $key => $value) {
             if (is_array($value)) {
                 if (!isset($target[$key])) {
-                    $target[$key] = array();
+                    $target[$key] = [];
                 }
                 $this->recursiveUpdate($target[$key], $value);
             } else {

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Typo3\TCA\Config\Type;
 
 use Mirko\T3maker\Typo3\TCA\Config\RenderType\CheckDefault;
@@ -19,7 +18,5 @@ class Check extends AbstractConfigType
         Type::BUILTIN_TYPE_OBJECT,
     ];
 
-    public const POSSIBLE_RENDER_TYPES = [
-        CheckDefault::class
-    ];
+    public const POSSIBLE_RENDER_TYPES = [CheckDefault::class];
 }

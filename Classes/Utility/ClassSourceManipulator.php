@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the Symfony MakerBundle package.
  *
@@ -11,23 +13,28 @@
 
 namespace Mirko\T3maker\Utility;
 
-use PhpParser\Node;
-use PhpParser\Lexer;
-use PhpParser\Parser;
-use PhpParser\Builder;
-use PhpParser\NodeVisitor;
-use PhpParser\NodeTraverser;
-use PhpParser\BuilderHelpers;
 use Doctrine\DBAL\Types\Types;
+use Exception;
+use Mirko\T3maker\Doctrine\BaseCollectionRelation;
 use Mirko\T3maker\Doctrine\BaseRelation;
 use Mirko\T3maker\Doctrine\DoctrineHelper;
-use Mirko\T3maker\Doctrine\RelationOneToOne;
+use Mirko\T3maker\Doctrine\RelationManyToMany;
 use Mirko\T3maker\Doctrine\RelationManyToOne;
 use Mirko\T3maker\Doctrine\RelationOneToMany;
-use Mirko\T3maker\Doctrine\RelationManyToMany;
-use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
+use Mirko\T3maker\Doctrine\RelationOneToOne;
+use PhpParser\Builder;
+use PhpParser\BuilderHelpers;
+use PhpParser\Lexer;
+use PhpParser\Node;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor;
+use PhpParser\Parser;
+use ReflectionClass;
+use ReflectionParameter;
+use Symfony\Bundle\MakerBundle\Str;
+use Symfony\Bundle\MakerBundle\Util\ClassNameValue;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Mirko\T3maker\Doctrine\BaseCollectionRelation;
+use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 
 /**
  * @internal
@@ -102,12 +109,12 @@ final class ClassSourceManipulator
         $isId = (bool)($columnOptions['id'] ?? false);
         $attributes = [];
         //TODO replace with T3 style
-//        $attributes[] = $this->buildAttributeNode(Column::class, $columnOptions, 'ORM');
+        //        $attributes[] = $this->buildAttributeNode(Column::class, $columnOptions, 'ORM');
 
         $defaultValue = null;
-        if ('array' === $typeHint) {
+        if ($typeHint === 'array') {
             $defaultValue = new Node\Expr\Array_([], ['kind' => Node\Expr\Array_::KIND_SHORT]);
-        } elseif ($typeHint && '\\' === $typeHint[0] && false !== strpos($typeHint, '\\', 1)) {
+        } elseif ($typeHint && $typeHint[0] === '\\' && strpos($typeHint, '\\', 1) !== false) {
             $typeHint = $this->addUseStatementIfNecessary(substr($typeHint, 1));
         }
 
@@ -131,7 +138,7 @@ final class ClassSourceManipulator
             // getter methods always have nullable return values
             // because even though these are required in the db, they may not be set yet
             // unless there is a default value
-            null === $defaultValue
+            $defaultValue === null
         );
 
         // don't generate setters for id fields
@@ -166,7 +173,7 @@ final class ClassSourceManipulator
         bool $isReturnTypeNullable,
         array $commentLines = []
     ): void {
-        $methodName = ('bool' === $returnType ? 'is' : 'get') . StringUtility::asCamelCase($propertyName);
+        $methodName = ($returnType === 'bool' ? 'is' : 'get') . Str::asCamelCase($propertyName);
         $this->addCustomGetter($propertyName, $methodName, $returnType, $isReturnTypeNullable, $commentLines);
     }
 
@@ -202,7 +209,7 @@ final class ClassSourceManipulator
 
         $newPropertyBuilder = (new Builder\Property($name))->makePrivate();
 
-        if (null !== $propertyType) {
+        if ($propertyType !== null) {
             $newPropertyBuilder->setType($propertyType);
         }
 
@@ -216,7 +223,7 @@ final class ClassSourceManipulator
             $newPropertyBuilder->setDocComment($this->createDocBlock($comments));
         }
 
-        if (self::DEFAULT_VALUE_NONE !== $defaultValue) {
+        if ($defaultValue !== self::DEFAULT_VALUE_NONE) {
             $newPropertyBuilder->setDefault($defaultValue);
         }
         $newPropertyNode = $newPropertyBuilder->getNode();
@@ -234,14 +241,14 @@ final class ClassSourceManipulator
     ): void {
         $propertyFetch = new Node\Expr\PropertyFetch(new Node\Expr\Variable('this'), $propertyName);
 
-        if (null !== $typeCast) {
+        if ($typeCast !== null) {
             switch ($typeCast) {
                 case 'string':
                     $propertyFetch = new Node\Expr\Cast\String_($propertyFetch);
                     break;
                 default:
                     // implement other cases if/when the library needs them
-                    throw new \Exception('Not implemented');
+                    throw new Exception('Not implemented');
             }
         }
 
@@ -251,7 +258,7 @@ final class ClassSourceManipulator
                 new Node\Stmt\Return_($propertyFetch)
             );
 
-        if (null !== $returnType) {
+        if ($returnType !== null) {
             $getterNodeBuilder->setReturnType($isReturnTypeNullable ? new Node\NullableType($returnType) : $returnType);
         }
 
@@ -268,7 +275,7 @@ final class ClassSourceManipulator
         bool $isNullable,
         array $commentLines = []
     ): Builder\Method {
-        $methodName = 'set' . StringUtility::asCamelCase($propertyName);
+        $methodName = 'set' . Str::asCamelCase($propertyName);
         $setterNodeBuilder = (new Builder\Method($methodName))->makePublic();
 
         if ($commentLines) {
@@ -276,7 +283,7 @@ final class ClassSourceManipulator
         }
 
         $paramBuilder = new Builder\Param($propertyName);
-        if (null !== $type) {
+        if ($type !== null) {
             $paramBuilder->setType($isNullable ? new Node\NullableType($type) : $type);
         }
         $setterNodeBuilder->addParam($paramBuilder->getNode());
@@ -398,14 +405,15 @@ final class ClassSourceManipulator
 
             // add call to parent::__construct() if there is a need to
             try {
-                $ref = new \ReflectionClass($this->getThisFullClassName());
+                $ref = new ReflectionClass($this->getThisFullClassName());
 
                 if ($ref->getParentClass() && $ref->getParentClass()->getConstructor()) {
                     $constructorNode->stmts[] = new Node\Stmt\Expression(
                         new Node\Expr\StaticCall(new Node\Name('parent'), new Node\Identifier('__construct'))
                     );
                 }
-            } catch (\ReflectionException $e) {
+            } catch (Exception $e) {
+                // do nothing
             }
 
             $this->addNodeAfterProperties($constructorNode);
@@ -417,12 +425,12 @@ final class ClassSourceManipulator
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     private function getConstructorNode(): ?Node\Stmt\ClassMethod
     {
         foreach ($this->getClassNode()->stmts as $classNode) {
-            if ($classNode instanceof Node\Stmt\ClassMethod && '__construct' == $classNode->name) {
+            if ($classNode instanceof Node\Stmt\ClassMethod && $classNode->name == '__construct') {
                 return $classNode;
             }
         }
@@ -431,11 +439,13 @@ final class ClassSourceManipulator
     }
 
     /**
+     * @throws Exception
+     *
      * @return string The alias to use when referencing this class
      */
     public function addUseStatementIfNecessary(string $class): string
     {
-        $shortClassName = StringUtility::getShortClassName($class);
+        $shortClassName = Str::getShortClassName($class);
         if ($this->isInSameNamespace($class)) {
             return $shortClassName;
         }
@@ -466,16 +476,16 @@ final class ClassSourceManipulator
 
                 // if $class is alphabetically before this use statement, place it before
                 // only set $targetIndex the first time you find it
-                if (null === $targetIndex && StringUtility::areClassesAlphabetical(
-                        $class,
-                        (string)$stmt->uses[0]->name
-                    )) {
+                if (
+                    $targetIndex === null
+                    && Str::areClassesAlphabetical($class, (string)$stmt->uses[0]->name)
+                ) {
                     $targetIndex = $index;
                 }
 
                 $lastUseStmtIndex = $index;
             } elseif ($stmt instanceof Node\Stmt\Class_) {
-                if (null !== $targetIndex) {
+                if ($targetIndex !== null) {
                     // we already found where to place the use statement
 
                     break;
@@ -483,7 +493,7 @@ final class ClassSourceManipulator
 
                 // we hit the class! If there were any use statements,
                 // then put this at the bottom of the use statement list
-                if (null !== $lastUseStmtIndex) {
+                if ($lastUseStmtIndex !== null) {
                     $targetIndex = $lastUseStmtIndex + 1;
                 } else {
                     $targetIndex = $index;
@@ -494,8 +504,8 @@ final class ClassSourceManipulator
             }
         }
 
-        if (null === $targetIndex) {
-            throw new \Exception('Could not find a class!');
+        if ($targetIndex === null) {
+            throw new Exception('Could not find a class!');
         }
 
         $newUseNode = (new Builder\Use_($class, Node\Stmt\Use_::TYPE_NORMAL))->getNode();
@@ -514,9 +524,11 @@ final class ClassSourceManipulator
     /**
      * Builds a PHPParser attribute node.
      *
-     * @param string $attributeClass The attribute class which should be used for the attribute E.g. #[Column()]
-     * @param array $options The named arguments for the attribute ($key = argument name, $value = argument value)
+     * @param string  $attributeClass  The attribute class which should be used for the attribute E.g. #[Column()]
+     * @param array   $options         The named arguments for the attribute ($key = name, $value = value)
      * @param ?string $attributePrefix If a prefix is provided, the node is built using the prefix. E.g. #[ORM\Column()]
+     *
+     * @throws Exception
      */
     public function buildAttributeNode(
         string $attributeClass,
@@ -528,12 +540,12 @@ final class ClassSourceManipulator
         $context = $this;
         $nodeArguments = array_map(
             static function (string $option, mixed $value) use ($context) {
-                if (null === $value) {
+                if ($value === null) {
                     return new Node\NullableType($option);
                 }
 
                 // Use the Doctrine Types constant
-                if ('type' === $option && str_starts_with($value, 'Types::')) {
+                if ($option === 'type' && str_starts_with($value, 'Types::')) {
                     return new Node\Arg(
                         new Node\Expr\ConstFetch(new Node\Name($value)),
                         false,
@@ -558,8 +570,8 @@ final class ClassSourceManipulator
         $class = $attributePrefix ? sprintf(
             '%s\\%s',
             $attributePrefix,
-            StringUtility::getShortClassName($attributeClass)
-        ) : StringUtility::getShortClassName($attributeClass);
+            Str::getShortClassName($attributeClass)
+        ) : Str::getShortClassName($attributeClass);
 
         return new Node\Attribute(
             new Node\Name($class),
@@ -606,11 +618,7 @@ final class ClassSourceManipulator
         $traverser = new NodeTraverser();
         $traverser->addVisitor(new NodeVisitor\CloningVisitor());
         $traverser->addVisitor(
-            new NodeVisitor\NameResolver(
-                null, [
-                    'replaceNodes' => false,
-                ]
-            )
+            new NodeVisitor\NameResolver(null, ['replaceNodes' => false])
         );
         $this->newStmts = $traverser->traverse($this->oldStmts);
     }
@@ -618,13 +626,11 @@ final class ClassSourceManipulator
     private function getClassNode(): Node
     {
         $node = $this->findFirstNode(
-            function ($node) {
-                return $node instanceof Node\Stmt\Class_;
-            }
+            fn ($node) => $node instanceof Node\Stmt\Class_
         );
 
         if (!$node) {
-            throw new \Exception('Could not find class node');
+            throw new Exception('Could not find class node');
         }
 
         return $node;
@@ -633,13 +639,11 @@ final class ClassSourceManipulator
     private function getNamespaceNode(): Node
     {
         $node = $this->findFirstNode(
-            function ($node) {
-                return $node instanceof Node\Stmt\Namespace_;
-            }
+            fn ($node) => $node instanceof Node\Stmt\Namespace_
         );
 
         if (!$node) {
-            throw new \Exception('Could not find namespace node');
+            throw new Exception('Could not find namespace node');
         }
 
         return $node;
@@ -665,7 +669,7 @@ final class ClassSourceManipulator
         $nodes = $visitor->getFoundNodes();
         $node = end($nodes);
 
-        return false === $node ? null : $node;
+        return $node === false ? null : $node;
     }
 
     private function createBlankLineNode(string $context): Node\Stmt\Use_|Node|Node\Stmt\Property|Node\Expr\Variable
@@ -682,7 +686,7 @@ final class ClassSourceManipulator
             self::CONTEXT_CLASS_METHOD => new Node\Expr\Variable(
                 '__EXTRA__LINE'
             ),
-            default => throw new \Exception('Unknown context: ' . $context),
+            default => throw new Exception('Unknown context: ' . $context),
         };
     }
 
@@ -692,16 +696,16 @@ final class ClassSourceManipulator
         switch ($context) {
             case self::CONTEXT_OUTSIDE_CLASS:
                 // just not needed yet
-                throw new \Exception('not supported');
+                throw new Exception('not supported');
             case self::CONTEXT_CLASS:
                 // just not needed yet
-                throw new \Exception('not supported');
+                throw new Exception('not supported');
             case self::CONTEXT_CLASS_METHOD:
                 return BuilderHelpers::normalizeStmt(
                     new Node\Expr\Variable(sprintf('__COMMENT__VAR_%d', \count($this->pendingComments) - 1))
                 );
             default:
-                throw new \Exception('Unknown context: ' . $context);
+                throw new Exception('Unknown context: ' . $context);
         }
     }
 
@@ -710,7 +714,7 @@ final class ClassSourceManipulator
         $docBlock = "/**\n";
         foreach ($commentLines as $commentLine) {
             if ($commentLine) {
-                $docBlock .= " * $commentLine\n";
+                $docBlock .= ' * ' . $commentLine . "\n";
             } else {
                 // avoid the empty, extra space on blank lines
                 $docBlock .= " *\n";
@@ -724,14 +728,14 @@ final class ClassSourceManipulator
     private function addMethod(Node\Stmt\ClassMethod $methodNode): void
     {
         $classNode = $this->getClassNode();
-        $methodName = $methodNode->name;
+        $methodName_name = $methodNode->name;
         $existingIndex = null;
-        if ($this->methodExists($methodName)) {
+        if ($this->methodExists((string)$methodName_name)) {
             if (!$this->overwrite) {
                 $this->writeNote(
                     sprintf(
                         'Not generating <info>%s::%s()</info>: method already exists',
-                        StringUtility::getShortClassName($this->getThisFullClassName()),
+                        Str::getShortClassName($this->getThisFullClassName()),
                         $methodName
                     )
                 );
@@ -752,7 +756,7 @@ final class ClassSourceManipulator
 
         $newStatements[] = $methodNode;
 
-        if (null === $existingIndex) {
+        if ($existingIndex === null) {
             // add them to the end!
 
             $classNode->stmts = array_merge($classNode->stmts, $newStatements);
@@ -796,18 +800,14 @@ final class ClassSourceManipulator
 
         // try to add after last property
         $targetNode = $this->findLastNode(
-            function ($node) {
-                return $node instanceof Node\Stmt\Property;
-            },
+            fn ($node) => $node instanceof Node\Stmt\Property,
             [$classNode]
         );
 
         // otherwise, try to add after the last constant
         if (!$targetNode) {
             $targetNode = $this->findLastNode(
-                function ($node) {
-                    return $node instanceof Node\Stmt\ClassConst;
-                },
+                fn ($node) => $node instanceof Node\Stmt\ClassConst,
                 [$classNode]
             );
         }
@@ -815,9 +815,7 @@ final class ClassSourceManipulator
         // otherwise, try to add after the last trait
         if (!$targetNode) {
             $targetNode = $this->findLastNode(
-                function ($node) {
-                    return $node instanceof Node\Stmt\TraitUse;
-                },
+                fn ($node) => $node instanceof Node\Stmt\TraitUse,
                 [$classNode]
             );
         }
@@ -965,15 +963,16 @@ final class ClassSourceManipulator
 
     private function methodExists(string $methodName): bool
     {
-        return false !== $this->getMethodIndex($methodName);
+        return $this->getMethodIndex($methodName) !== false;
     }
 
     private function getMethodIndex(string $methodName)
     {
         foreach ($this->getClassNode()->stmts as $i => $node) {
-            if ($node instanceof Node\Stmt\ClassMethod && strtolower($node->name->toString()) === strtolower(
-                    $methodName
-                )) {
+            if (
+                $node instanceof Node\Stmt\ClassMethod && strtolower($node->name->toString())
+                === strtolower($methodName)
+            ) {
                 return $i;
             }
         }
@@ -994,7 +993,7 @@ final class ClassSourceManipulator
 
     private function writeNote(string $note): void
     {
-        if (null !== $this->io) {
+        if ($this->io !== null) {
             $this->io->text($note);
         }
     }
@@ -1003,7 +1002,7 @@ final class ClassSourceManipulator
      * builds a PHPParser Expr Node based on the value given in $value
      * throws an Exception when the given $value is not resolvable by this method.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     private function buildNodeExprByValue(mixed $value): Node\Expr
     {
@@ -1038,7 +1037,7 @@ final class ClassSourceManipulator
                 $nodeValue = null;
         }
 
-        if (null === $nodeValue) {
+        if ($nodeValue === null) {
             if ($value instanceof ClassNameValue) {
                 $nodeValue = new Node\Expr\ConstFetch(
                     new Node\Name(
@@ -1046,7 +1045,7 @@ final class ClassSourceManipulator
                     )
                 );
             } else {
-                throw new \Exception(sprintf('Cannot build a node expr for value of type "%s"', \gettype($value)));
+                throw new Exception(sprintf('Cannot build a node expr for value of type "%s"', \gettype($value)));
             }
         }
 
@@ -1066,10 +1065,8 @@ final class ClassSourceManipulator
         }
 
         $constructorParameterNames = array_map(
-            static function (\ReflectionParameter $reflectionParameter) {
-                return $reflectionParameter->getName();
-            },
-            (new \ReflectionClass($classString))->getConstructor()->getParameters()
+            static fn (ReflectionParameter $reflectionParameter) => $reflectionParameter->getName(),
+            (new ReflectionClass($classString))->getConstructor()->getParameters()
         );
 
         $sorted = [];

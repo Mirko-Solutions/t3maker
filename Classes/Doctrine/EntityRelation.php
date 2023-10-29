@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Doctrine;
+
+use Exception;
+use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * @internal
@@ -28,7 +31,7 @@ final class EntityRelation
         private string $inverseClass,
     ) {
         if (!\in_array($type, self::getValidRelationTypes())) {
-            throw new \Exception(sprintf('Invalid relation type "%s"', $type));
+            throw new Exception(sprintf('Invalid relation type "%s"', $type));
         }
 
         $this->isSelfReferencing = $owningClass === $inverseClass;
@@ -62,7 +65,7 @@ final class EntityRelation
     public function setInverseProperty(string $inverseProperty): void
     {
         if (!$this->mapInverseRelation) {
-            throw new \Exception('Cannot call setInverseProperty() when the inverse relation will not be mapped.');
+            throw new Exception('Cannot call setInverseProperty() when the inverse relation will not be mapped.');
         }
 
         $this->inverseProperty = $inverseProperty;
@@ -107,7 +110,7 @@ final class EntityRelation
                 isOwning: true,
                 isNullable: $this->isNullable,
             )),
-            default => throw new \InvalidArgumentException('Invalid type'),
+            default => throw new InvalidArgumentException('Invalid type'),
         };
     }
 
@@ -134,7 +137,7 @@ final class EntityRelation
                 isSelfReferencing: $this->isSelfReferencing,
                 isNullable: $this->isNullable,
             )),
-            default => throw new \InvalidArgumentException('Invalid type'),
+            default => throw new InvalidArgumentException('Invalid type'),
         };
     }
 
@@ -171,7 +174,7 @@ final class EntityRelation
     public function setMapInverseRelation(bool $mapInverseRelation): void
     {
         if ($mapInverseRelation && $this->inverseProperty) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 'Cannot set setMapInverseRelation() to true when the inverse relation property is set.'
             );
         }

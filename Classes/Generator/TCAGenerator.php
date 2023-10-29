@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-
 namespace Mirko\T3maker\Generator;
 
 use Mirko\T3maker\Parser\ModelParser;
 use Mirko\T3maker\Utility\PackageDetails;
-use Mirko\T3maker\Utility\StringUtility;
 use ReflectionClass;
+use Symfony\Bundle\MakerBundle\Str;
 use Symfony\Component\VarExporter\VarExporter;
 
 class TCAGenerator
@@ -18,8 +17,9 @@ class TCAGenerator
     }
 
     /**
-     * @param PackageDetails $package
+     * @param PackageDetails  $package
      * @param ReflectionClass $class
+     *
      * @return string
      */
     public function generateTCAFromModel(PackageDetails $package, ReflectionClass $class)
@@ -46,14 +46,14 @@ class TCAGenerator
     public function getTcaExtensionFilePath(PackageDetails $package, ReflectionClass $class): string
     {
         return 'Configuration/TCA/' . $this->generateTCAFileName(
-                $package->getName(),
-                $class->getShortName()
-            );
+            $package->getName(),
+            $class->getShortName()
+        );
     }
 
     private function generateTCAFileName($extKey, $modelName): string
     {
-        $modelName = StringUtility::addSuffix(strtolower($modelName), '.php');
-        return "tx_{$extKey}_domain_model_{$modelName}";
+        $modelName = Str::addSuffix(strtolower($modelName), '.php');
+        return 'tx_' . $extKey . '_domain_model_' . $modelName;
     }
 }
